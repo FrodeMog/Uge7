@@ -24,7 +24,8 @@ class Product(BaseModel):
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(200))
     category_id = Column(Integer, ForeignKey('categories.id'))
-    price = Column(Float)
+    purchase_price = Column(Float)
+    restock_price = Column(Float)
     currency = Column(String(3), nullable=False)
     quantity = Column(Integer)
     creation_date = Column(DateTime, default=datetime.now(), nullable=False)
@@ -32,7 +33,7 @@ class Product(BaseModel):
     
     category = relationship('Category', back_populates='products')
 
-    @validates('price')
+    @validates('purchase_price', 'restock_price')
     def validate_price(self, key, price):
         if price < 0:
             raise ValueError("Price must be positive")
