@@ -1,6 +1,4 @@
-from db_connect import SingletonDatabaseConnect
 from db_classes import *
-from sqlalchemy import update
 
 class DatabaseHandler:
     def __init__(self, session):
@@ -11,6 +9,9 @@ class DatabaseHandler:
 
     def delete(self, instance):
         self.session.delete(instance)
+
+    def update(self, instance, **kwargs):
+        self.session.query(instance).update(kwargs)
 
     def commit(self):
         self.session.commit()
@@ -25,17 +26,30 @@ class DatabaseHandler:
         return self.session.query(model).all()
     
 class CategoryHandler(DatabaseHandler):
-    def create_category(self, name, description, parent_name='Unknown'):
-        parent = self.get_by(Category, name=parent_name)
-        if parent is None:
-            parent = Category(name=parent_name)
-            self.add(parent)
+    def create_category(self, name, description, parent_id=None, parent_name=None):
+        # Check if there are any categories in the database
+        if not self.get_all(Category):
+            # If not, create the "Unknown" category
+            unknown_category = Category(name="Unknown", description="Unknown category. Reference for products with no category assigned.")
+            self.add(unknown_category)
             self.commit()
+
+        parent = None
+        if parent_id is not None:
+            parent = self.get_by(Category, id=parent_id)
+            if parent is None:
+                raise ValueError(f"No category found with ID {parent_id}")
+        elif parent_name is not None:
+            parent = self.get_by(Category, name=parent_name)
+            if parent is None:
+                parent = Category(name=parent_name)
+                self.add(parent)
+                self.commit()
 
         category = Category(
             name=name,
             description=description,
-            parent_id=parent.id
+            parent_id=parent.id if parent else None
         )
         self.add(category)
         self.commit()
@@ -57,12 +71,19 @@ class CategoryHandler(DatabaseHandler):
         return category
 
 class ProductHandler(DatabaseHandler):
-    def create_product(self, name, description, price, currency, quantity, category_name='Unknown'):
-        category = self.get_by(Category, name=category_name)
-        if category is None:
-            category = Category(name=category_name)
-            self.add(category)
-            self.commit()
+    def create_product(self, name, description, price, currency, quantity, category_id=None, category_name=None):
+        if category_name is not None:
+            category = self.get_by(Category, name=category_name)
+            if category is None:
+                category = Category(name=category_name)
+                self.add(category)
+                self.commit()
+        elif category_id is not None:
+            category = self.get_by(Category, id=category_id)
+            if category is None:
+                raise ValueError(f"No category found with ID {category_id}")
+        else:
+            category = self.get_by(Category, id=1)  # Use the default "Unknown" category
 
         product = Product(
             name=name,
