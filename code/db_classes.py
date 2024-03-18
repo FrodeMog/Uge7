@@ -125,9 +125,6 @@ class User(Base):
         return email
 
 class AdminUser(User):
-    __tablename__ = 'admin_users'
-    
-    id = Column(Integer, ForeignKey('users.id'), primary_key=True)
     admin_status = Column(String(50), default='regular')  # super, regular, etc.
 
     __mapper_args__ = {
