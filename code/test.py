@@ -265,6 +265,63 @@ class TestPopulateDatabase(unittest.TestCase):
         self.assertEqual(transaction.profit, -250)
         self.assertEqual(transaction.quantity, 5)
         self.assertEqual(product.quantity, 15)
+    
+    def test_create_transaction_all_scenarios(self):
+        user = self.setup.user_h.create_user(
+                            username="test_create_transaction_all_scenarios",
+                            password=self.setup.fake.password(),
+                            email=self.setup.fake.email()
+                            )
+        category = self.setup.category_h.create_category(
+                            name="test_create_transaction_all_scenarios",
+                            description=self.setup.fake.sentence()
+                            )
+        product = self.setup.product_h.create_product(
+                            name="test_create_transaction_all_scenarios",
+                            description=self.setup.fake.sentence(),
+                            purchase_price=100,
+                            restock_price=50,
+                            quantity=10,
+                            currency='USD',
+                            category_name=category.name
+                            )
+        transaction = self.setup.transaction_h.create_transaction(
+                            product_id=product.id,
+                            user_id=user.id,
+                            quantity=5,
+                            transaction_type='purchase',
+                            currency='USD'
+                            )
+        self.assertIsInstance(transaction, Transaction)
+        self.assertEqual(transaction.product_id, product.id)
+        self.assertEqual(transaction.user_id, user.id)
+        self.assertEqual(transaction.profit, 500)
+        self.assertEqual(product.quantity, 5) # purchase 5 form 10 = 5
+        transaction = self.setup.transaction_h.create_transaction(
+                            product_id=product.id,
+                            user_id=user.id,
+                            quantity=5,
+                            transaction_type='refund',
+                            currency='USD'
+                            )
+        self.assertIsInstance(transaction, Transaction)
+        self.assertEqual(transaction.product_id, product.id)
+        self.assertEqual(transaction.user_id, user.id)
+        self.assertEqual(transaction.profit, -500)
+        self.assertEqual(product.quantity, 10) # refund 5 from 5 = 10
+        transaction = self.setup.transaction_h.create_transaction(
+                            product_id=product.id,
+                            user_id=user.id,
+                            quantity=5,
+                            transaction_type='restock',
+                            currency='USD'
+                            )
+        self.assertIsInstance(transaction, Transaction)
+        self.assertEqual(transaction.product_id, product.id)
+        self.assertEqual(transaction.user_id, user.id)
+        self.assertEqual(transaction.profit, -250)
+        self.assertEqual(transaction.quantity, 5)
+        self.assertEqual(product.quantity, 15) # restock 5 from 10 = 15
 
 class CustomTestResult(unittest.TextTestResult):
     def printErrors(self):
