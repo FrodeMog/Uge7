@@ -3,9 +3,8 @@ from db_classes import *
 from sqlalchemy import update
 
 class DatabaseHandler:
-    def __init__(self):
-        db_connect = SingletonDatabaseConnect()
-        self.session = db_connect.get_session()
+    def __init__(self, session):
+        self.session = session
 
     def add(self, instance):
         self.session.add(instance)
