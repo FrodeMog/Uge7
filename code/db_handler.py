@@ -71,7 +71,7 @@ class CategoryHandler(DatabaseHandler):
         return category
 
 class ProductHandler(DatabaseHandler):
-    def create_product(self, name, description, price, currency, quantity, category_id=None, category_name=None):
+    def create_product(self, name, description, purchase_price, restock_price, currency, quantity, category_id=None, category_name=None):
         if category_name is not None:
             category = self.get_by(Category, name=category_name)
             if category is None:
@@ -89,7 +89,8 @@ class ProductHandler(DatabaseHandler):
             name=name,
             description=description,
             category_id=category.id,
-            price=price,
+            purchase_price=purchase_price,
+            restock_price=restock_price,
             currency=currency,
             quantity=quantity,
             creation_date=datetime.now(),
@@ -116,7 +117,25 @@ class ProductHandler(DatabaseHandler):
         return product
     
 class TransactionHandler(DatabaseHandler):
-    def create_transaction(self, product_id, user_id, profit, quantity, transaction_type, currency):
+    def create_transaction(self, product_id, user_id, quantity, transaction_type, currency):
+        product = self.get_by(Product, id=product_id)
+        if product is None:
+            raise ValueError(f"No product found with ID {product_id}")
+
+        if transaction_type == 'purchase':
+            if product.quantity < quantity:
+                raise ValueError("Not enough stock for purchase")
+            product.quantity -= quantity
+            profit = product.purchase_price * quantity
+        elif transaction_type == 'refund':
+            product.quantity += quantity
+            profit = -product.purchase_price * quantity
+        elif transaction_type == 'restock':
+            product.quantity += quantity
+            profit = -product.restock_price * quantity
+        else:
+            raise ValueError("Invalid transaction type")
+
         transaction = Transaction(
             product_id=product_id,
             user_id=user_id,
