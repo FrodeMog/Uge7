@@ -38,5 +38,5 @@ admin = admin_user_h.create_admin_user(
 user = user_h.create_user(
                     username='user',
                     password='password',
-                    email='user@email.com',
+                    email='user@email.com'
                     )

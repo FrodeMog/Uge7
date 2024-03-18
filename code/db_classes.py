@@ -60,7 +60,7 @@ class Category(BaseModel):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(200))
-    parent_id = Column(Integer, ForeignKey('categories.id'))
+    parent_id = Column(Integer, ForeignKey('categories.id')) # Parentid None means it's a top-level category
     
     parent = relationship('Category', remote_side=[id], backref='subcategories')
     products = relationship('Product', back_populates='category')
