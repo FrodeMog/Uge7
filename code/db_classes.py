@@ -11,13 +11,15 @@ Base = declarative_base()
 class Product(Base):
     __tablename__ = 'products'
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    uuid = Column(String, default=str(uuid.uuid4()), unique=True, nullable=False)
-    name = Column(String)
-    description = Column(String)
+    uuid = Column(String(36), default=str(uuid.uuid4()), unique=True, nullable=False)
+    name = Column(String(50), unique=True, nullable=False)
+    description = Column(String(200))
     category_id = Column(Integer, ForeignKey('categories.id'))
     price = Column(Float)
-    currency = Column(String)
+    currency = Column(String(3), nullable=False)
     quantity = Column(Integer)
+    creation_date = Column(DateTime, default=datetime.now(), nullable=False)
+    changed_date = Column(DateTime, default=datetime.now(), nullable=False)
     
     category = relationship('Category', back_populates='products')
 
@@ -37,8 +39,8 @@ class Category(Base):
     __tablename__ = 'categories'
     
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    name = Column(String, unique=True, nullable=False)
-    description = Column(String)
+    name = Column(String(50), unique=True, nullable=False)
+    description = Column(String(200))
     parent_id = Column(Integer, ForeignKey('categories.id'))
     
     parent = relationship('Category', remote_side=[id], backref='subcategories')
@@ -48,14 +50,14 @@ class Transaction(Base):
     __tablename__ = 'transactions'
     
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    uuid = Column(String, default=str(uuid.uuid4()), unique=True, nullable=False)
+    uuid = Column(String(36), default=str(uuid.uuid4()), unique=True, nullable=False)
     product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     date = Column(DateTime, default=datetime.now(), nullable=False)
     profit = Column(Float, nullable=False)
-    currency = Column(String, nullable=False)
+    currency = Column(String(3), nullable=False)
     quantity = Column(Integer, nullable=False)
-    transaction_type = Column(String, nullable=False)
+    transaction_type = Column(String(20), nullable=False)
 
     product = relationship('Product')
     user = relationship('User')
@@ -86,10 +88,11 @@ class User(Base):
     __tablename__ = 'users'
     
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    uuid = Column(String, default=lambda: str(uuid.uuid4()), unique=True)
+    uuid = Column(String(36), default=str(uuid.uuid4()), unique=True, nullable=False)
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
+    type = Column(String(50), default='user')  # admin_user, user
 
     __mapper_args__ = {
         'polymorphic_identity':'user',
@@ -125,7 +128,7 @@ class AdminUser(User):
     __tablename__ = 'admin_users'
     
     id = Column(Integer, ForeignKey('users.id'), primary_key=True)
-    admin_status = Column(String(50), default='regular') # super, regular, etc.
+    admin_status = Column(String(50), default='regular')  # super, regular, etc.
 
     __mapper_args__ = {
         'polymorphic_identity':'admin_user',
