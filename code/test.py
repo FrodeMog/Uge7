@@ -92,7 +92,8 @@ class TestPopulateDatabase(unittest.TestCase):
         product = self.setup.product_h.create_product(
                             name="test_create_products",
                             description=self.setup.fake.sentence(),
-                            price=self.setup.fake.random_number(),
+                            purchase_price=self.setup.fake.random_number(),
+                            restock_price=self.setup.fake.random_number(),
                             quantity=self.setup.fake.random_number(),
                             currency='USD',
                             category_name=category.name
@@ -105,7 +106,8 @@ class TestPopulateDatabase(unittest.TestCase):
         product = self.setup.product_h.create_product(
                             name="test_create_products_without_category",
                             description=self.setup.fake.sentence(),
-                            price=self.setup.fake.random_number(),
+                            purchase_price=self.setup.fake.random_number(),
+                            restock_price=self.setup.fake.random_number(),
                             quantity=self.setup.fake.random_number(),
                             currency='USD',
                             )
@@ -121,7 +123,8 @@ class TestPopulateDatabase(unittest.TestCase):
         product = self.setup.product_h.create_product(
                             name="test_create_products_with_category_id",
                             description=self.setup.fake.sentence(),
-                            price=self.setup.fake.random_number(),
+                            purchase_price=self.setup.fake.random_number(),
+                            restock_price=self.setup.fake.random_number(),
                             quantity=self.setup.fake.random_number(),
                             currency='USD',
                             category_id=category.id
@@ -129,6 +132,139 @@ class TestPopulateDatabase(unittest.TestCase):
         self.assertIsInstance(product, Product)
         self.assertEqual(product.category_id, category.id)
         self.assertEqual(product.category.name, category.name)
+    
+    def test_create_product_with_new_category(self):
+        product = self.setup.product_h.create_product(
+                            name="test_create_product_with_new_category",
+                            description=self.setup.fake.sentence(),
+                            purchase_price=self.setup.fake.random_number(),
+                            restock_price=self.setup.fake.random_number(),
+                            quantity=self.setup.fake.random_number(),
+                            currency='USD',
+                            category_name="test_create_product_with_new_category"
+                            )
+        self.assertIsInstance(product, Product)
+        self.assertEqual(product.category.name, "test_create_product_with_new_category")
+    
+    def test_create_product_with_subcategory(self):
+        parent = self.setup.category_h.create_category(
+                            name="test_create_product_with_subcategory_the_parent",
+                            description=self.setup.fake.sentence()
+                            )
+        child = self.setup.category_h.create_category(
+                            name="test_create_product_with_subcategory_the_child",
+                            description=self.setup.fake.sentence(),
+                            parent_id=parent.id
+                            )
+        product = self.setup.product_h.create_product(
+                            name="test_create_product_with_subcategory",
+                            description=self.setup.fake.sentence(),
+                            purchase_price=self.setup.fake.random_number(),
+                            restock_price=self.setup.fake.random_number(),
+                            quantity=self.setup.fake.random_number(),
+                            currency='USD',
+                            category_name=child.name
+                            )
+        self.assertIsInstance(product, Product)
+        self.assertEqual(product.category.parent.name, parent.name)
+
+    def test_create_transactions_purchase(self):
+        user = self.setup.user_h.create_user(
+                            username="test_create_transactions_purchase",
+                            password=self.setup.fake.password(),
+                            email=self.setup.fake.email()
+                            )
+        category = self.setup.category_h.create_category(
+                            name="test_create_transactions_purchase",
+                            description=self.setup.fake.sentence()
+                            )
+        product = self.setup.product_h.create_product(
+                            name="test_create_transactions_purchase",
+                            description=self.setup.fake.sentence(),
+                            purchase_price=100,
+                            restock_price=50,
+                            quantity=10,
+                            currency='USD',
+                            category_name=category.name
+                            )
+        transaction = self.setup.transaction_h.create_transaction(
+                            product_id=product.id,
+                            user_id=user.id,
+                            quantity=5,
+                            transaction_type='purchase',
+                            currency='USD'
+                            )
+        self.assertIsInstance(transaction, Transaction)
+        self.assertEqual(transaction.product_id, product.id)
+        self.assertEqual(transaction.user_id, user.id)
+        self.assertEqual(transaction.profit, 500)
+        self.assertEqual(transaction.quantity, 5)
+    
+    def test_create_transactions_refund(self):
+        user = self.setup.user_h.create_user(
+                            username="test_create_transactions_refund",
+                            password=self.setup.fake.password(),
+                            email=self.setup.fake.email()
+                            )
+        category = self.setup.category_h.create_category(
+                            name="test_create_transactions_refund",
+                            description=self.setup.fake.sentence()
+                            )
+        product = self.setup.product_h.create_product(
+                            name="test_create_transactions_refund",
+                            description=self.setup.fake.sentence(),
+                            purchase_price=100,
+                            restock_price=50,
+                            quantity=10,
+                            currency='USD',
+                            category_name=category.name
+                            )
+        transaction = self.setup.transaction_h.create_transaction(
+                            product_id=product.id,
+                            user_id=user.id,
+                            quantity=5,
+                            transaction_type='refund',
+                            currency='USD'
+                            )
+        self.assertIsInstance(transaction, Transaction)
+        self.assertEqual(transaction.product_id, product.id)
+        self.assertEqual(transaction.user_id, user.id)
+        self.assertEqual(transaction.profit, -500)
+        self.assertEqual(transaction.quantity, 5)
+        self.assertEqual(product.quantity, 15)
+
+    def test_create_transactions_restock(self):
+        user = self.setup.user_h.create_user(
+                            username="test_create_transactions_restock",
+                            password=self.setup.fake.password(),
+                            email=self.setup.fake.email()
+                            )
+        category = self.setup.category_h.create_category(
+                            name="test_create_transactions_restock",
+                            description=self.setup.fake.sentence()
+                            )
+        product = self.setup.product_h.create_product(
+                            name="test_create_transactions_restock",
+                            description=self.setup.fake.sentence(),
+                            purchase_price=100,
+                            restock_price=50,
+                            quantity=10,
+                            currency='USD',
+                            category_name=category.name
+                            )
+        transaction = self.setup.transaction_h.create_transaction(
+                            product_id=product.id,
+                            user_id=user.id,
+                            quantity=5,
+                            transaction_type='restock',
+                            currency='USD'
+                            )
+        self.assertIsInstance(transaction, Transaction)
+        self.assertEqual(transaction.product_id, product.id)
+        self.assertEqual(transaction.user_id, user.id)
+        self.assertEqual(transaction.profit, -250)
+        self.assertEqual(transaction.quantity, 5)
+        self.assertEqual(product.quantity, 15)
 
 class CustomTestResult(unittest.TextTestResult):
     def printErrors(self):
