@@ -43,6 +43,16 @@ class Product(BaseModel):
         if quantity <= 0:
             raise ValueError("Quantity must be 0 or more")
         return quantity
+    
+    @validates('currency')
+    def validate_currency(self, key, currency):
+        with open('../data/currencies.json', 'r') as f:
+            data = json.load(f)
+        allowed_currencies = data['allowed_currencies']
+        currency = currency.lower()
+        if currency not in allowed_currencies:
+            raise ValueError(f"Invalid currency '{currency}', allowed currencies are {allowed_currencies}")
+        return currency
 
 class Category(BaseModel):
     __tablename__ = 'categories'
@@ -89,6 +99,7 @@ class Transaction(BaseModel):
         with open('../data/currencies.json', 'r') as f:
             data = json.load(f)
         allowed_currencies = data['allowed_currencies']
+        currency = currency.lower()
         if currency not in allowed_currencies:
             raise ValueError(f"Invalid currency '{currency}', allowed currencies are {allowed_currencies}")
         return currency
