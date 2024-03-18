@@ -5,13 +5,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import re
 import json
+import typing
+import sqlalchemy as sa
 
 Base = declarative_base()
 
-class Product(Base):
+class BaseModel(Base):
+    __abstract__ = True
+
+    def __repr__(self):
+        return str({column.name: getattr(self, column.name) for column in self.__table__.columns if hasattr(self, column.name)})
+        
+class Product(BaseModel):
     __tablename__ = 'products'
+
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    uuid = Column(String(36), default=str(uuid.uuid4()), unique=True, nullable=False)
+    uuid = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(200))
     category_id = Column(Integer, ForeignKey('categories.id'))
@@ -35,7 +44,7 @@ class Product(Base):
             raise ValueError("Quantity must be 0 or more")
         return quantity
 
-class Category(Base):
+class Category(BaseModel):
     __tablename__ = 'categories'
     
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
@@ -46,11 +55,11 @@ class Category(Base):
     parent = relationship('Category', remote_side=[id], backref='subcategories')
     products = relationship('Product', back_populates='category')
 
-class Transaction(Base):
+class Transaction(BaseModel):
     __tablename__ = 'transactions'
     
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    uuid = Column(String(36), default=str(uuid.uuid4()), unique=True, nullable=False)
+    uuid = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     date = Column(DateTime, default=datetime.now(), nullable=False)
@@ -84,13 +93,13 @@ class Transaction(Base):
             raise ValueError(f"Invalid currency '{currency}', allowed currencies are {allowed_currencies}")
         return currency
 
-class User(Base):
+class User(BaseModel):
     __tablename__ = 'users'
     
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    uuid = Column(String(36), default=str(uuid.uuid4()), unique=True, nullable=False)
+    uuid = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     username = Column(String(50), unique=True, nullable=False)
-    password = Column(String(100), nullable=False)
+    password = Column(String(300), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     type = Column(String(50), default='user')  # admin_user, user
 
@@ -125,7 +134,7 @@ class User(Base):
         return email
 
 class AdminUser(User):
-    admin_status = Column(String(50), default='regular')  # super, regular, etc.
+    admin_status = Column(String(50), default='none')  # super, regular, etc.
 
     __mapper_args__ = {
         'polymorphic_identity':'admin_user',
@@ -133,7 +142,7 @@ class AdminUser(User):
 
     @validates('admin_status')
     def validate_admin_status(self, key, status):
-        allowed_statuses = ['regular', 'full']
+        allowed_statuses = ['none', 'regular', 'full']
         if status not in allowed_statuses:
             raise ValueError(f"Invalid admin status '{status}', allowed statuses are {allowed_statuses}")
         return status
