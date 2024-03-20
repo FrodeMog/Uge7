@@ -15,7 +15,7 @@ class BaseModel(Base):
 
     def __repr__(self):
         return str({column.name: getattr(self, column.name) for column in self.__table__.columns if hasattr(self, column.name)})
-        
+    
 class Product(BaseModel):
     __tablename__ = 'products'
 
@@ -74,7 +74,7 @@ class Transaction(BaseModel):
     product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     date = Column(DateTime, default=datetime.now(), nullable=False)
-    profit = Column(Float, nullable=False)
+    price = Column(Float, nullable=False)
     currency = Column(String(3), nullable=False)
     quantity = Column(Integer, nullable=False)
     transaction_type = Column(String(20), nullable=False)

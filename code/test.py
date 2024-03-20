@@ -197,7 +197,7 @@ class TestPopulateDatabase(unittest.TestCase):
         self.assertIsInstance(transaction, Transaction)
         self.assertEqual(transaction.product_id, product.id)
         self.assertEqual(transaction.user_id, user.id)
-        self.assertEqual(transaction.profit, 500)
+        self.assertEqual(transaction.price, 500)
         self.assertEqual(transaction.quantity, 5)
     
     def test_create_transactions_refund(self):
@@ -229,7 +229,7 @@ class TestPopulateDatabase(unittest.TestCase):
         self.assertIsInstance(transaction, Transaction)
         self.assertEqual(transaction.product_id, product.id)
         self.assertEqual(transaction.user_id, user.id)
-        self.assertEqual(transaction.profit, -500)
+        self.assertEqual(transaction.price, -500)
         self.assertEqual(transaction.quantity, 5)
         self.assertEqual(product.quantity, 15)
 
@@ -262,7 +262,7 @@ class TestPopulateDatabase(unittest.TestCase):
         self.assertIsInstance(transaction, Transaction)
         self.assertEqual(transaction.product_id, product.id)
         self.assertEqual(transaction.user_id, user.id)
-        self.assertEqual(transaction.profit, -250)
+        self.assertEqual(transaction.price, -250)
         self.assertEqual(transaction.quantity, 5)
         self.assertEqual(product.quantity, 15)
     
@@ -295,7 +295,7 @@ class TestPopulateDatabase(unittest.TestCase):
         self.assertIsInstance(transaction, Transaction)
         self.assertEqual(transaction.product_id, product.id)
         self.assertEqual(transaction.user_id, user.id)
-        self.assertEqual(transaction.profit, 500)
+        self.assertEqual(transaction.price, 500)
         self.assertEqual(product.quantity, 5) # purchase 5 form 10 = 5
         transaction = self.setup.transaction_h.create_transaction(
                             product_id=product.id,
@@ -307,7 +307,7 @@ class TestPopulateDatabase(unittest.TestCase):
         self.assertIsInstance(transaction, Transaction)
         self.assertEqual(transaction.product_id, product.id)
         self.assertEqual(transaction.user_id, user.id)
-        self.assertEqual(transaction.profit, -500)
+        self.assertEqual(transaction.price, -500)
         self.assertEqual(product.quantity, 10) # refund 5 from 5 = 10
         transaction = self.setup.transaction_h.create_transaction(
                             product_id=product.id,
@@ -319,7 +319,7 @@ class TestPopulateDatabase(unittest.TestCase):
         self.assertIsInstance(transaction, Transaction)
         self.assertEqual(transaction.product_id, product.id)
         self.assertEqual(transaction.user_id, user.id)
-        self.assertEqual(transaction.profit, -250)
+        self.assertEqual(transaction.price, -250)
         self.assertEqual(transaction.quantity, 5)
         self.assertEqual(product.quantity, 15) # restock 5 from 10 = 15
 

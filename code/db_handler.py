@@ -24,6 +24,9 @@ class DatabaseHandler:
 
     def get_all(self, model):
         return self.session.query(model).all()
+
+    def get_all_by(self, model, **filters):
+        return self.session.query(model).filter_by(**filters).all()
     
 class CategoryHandler(DatabaseHandler):
     def create_category(self, name, description, parent_id=None, parent_name=None):
@@ -126,20 +129,20 @@ class TransactionHandler(DatabaseHandler):
             if product.quantity < quantity:
                 raise ValueError("Not enough stock for purchase")
             product.quantity -= quantity
-            profit = product.purchase_price * quantity
+            price = product.purchase_price * quantity
         elif transaction_type == 'refund':
             product.quantity += quantity
-            profit = -product.purchase_price * quantity
+            price = -product.purchase_price * quantity
         elif transaction_type == 'restock':
             product.quantity += quantity
-            profit = -product.restock_price * quantity
+            price = -product.restock_price * quantity
         else:
             raise ValueError("Invalid transaction type")
 
         transaction = Transaction(
             product_id=product_id,
             user_id=user_id,
-            profit=profit,
+            price=price,
             quantity=quantity,
             transaction_type=transaction_type,
             currency=currency
