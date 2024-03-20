@@ -16,6 +16,15 @@ class BaseModel(Base):
     def __repr__(self):
         return str({column.name: getattr(self, column.name) for column in self.__table__.columns if hasattr(self, column.name)})
     
+class Log(BaseModel):
+    __tablename__ = 'logs'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    uuid = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
+    date = Column(DateTime, default=datetime.now(), nullable=False)
+    func = Column(String(100), nullable=False)
+    kwargs = Column(String(200))
+
 class Product(BaseModel):
     __tablename__ = 'products'
 

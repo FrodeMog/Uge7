@@ -36,6 +36,24 @@ class Setup():
         self.fake = fk()
         Base.metadata.create_all(self.db_connect.get_engine())
 
+class TestLogger(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.setup = Setup()
+        CleanDatabase(cls.setup.session).clean()
+    
+    def test_log_exception(self):
+        @log_exception
+        def test_func():
+            raise ValueError("Test exception")
+        result = test_func()
+        self.assertIsInstance(result, str)
+        self.assertEqual(result, "Test exception")
+        logs = self.setup.session.query(Log).all()
+        self.assertEqual(len(logs), 1)
+        self.assertEqual(logs[0].func, 'test_func')
+        self.assertEqual(logs[0].kwargs, 'None')
+
 class TestPopulateDatabase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

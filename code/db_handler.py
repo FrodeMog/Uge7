@@ -1,30 +1,39 @@
 from db_classes import *
+from db_logger import log_exception
 
 class DatabaseHandler:
     def __init__(self, session):
         self.session = session
 
+    @log_exception
     def add(self, instance):
         self.session.add(instance)
 
+    @log_exception
     def delete(self, instance):
         self.session.delete(instance)
 
+    @log_exception
     def update(self, instance, **kwargs):
         self.session.query(instance).update(kwargs)
 
+    @log_exception
     def commit(self):
         self.session.commit()
     
+    @log_exception
     def get_by_id(self, model, id):
         return self.session.query(model).get(id)
     
+    @log_exception
     def get_by(self, model, **filters):
         return self.session.query(model).filter_by(**filters).first()
 
+    @log_exception
     def get_all(self, model):
         return self.session.query(model).all()
 
+    @log_exception
     def get_all_by(self, model, **filters):
         return self.session.query(model).filter_by(**filters).all()
     
