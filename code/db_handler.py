@@ -150,10 +150,9 @@ class TransactionHandler(DatabaseHandler):
 
 class UserHandler(DatabaseHandler):
     def create_user(self, username, password, email):
-        user = User(
-            username=username,
-            email=email
-        )
+        user = User()
+        user.set_username(username)
+        user.set_email(email)
         user.set_password(password)
         self.add(user)
         self.commit()
