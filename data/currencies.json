@@ -1,8 +1,14 @@
 {
     "allowed_currencies": [
-    "usd",
-    "eur",
-    "gbp",
-    "dkk"
+        "usd",
+        "eur",
+        "gbp",
+        "dkk"
+    ],
+    "conversion_currencies": [
+        ["usd", 1.00],
+        ["eur", 0.92],
+        ["gbp", 0.79],
+        ["dkk", 6.87]
     ]
 }
