@@ -1,37 +1,19 @@
-import json
-from db_connect import SingletonDatabaseConnect
-from db_classes import *
-import functools
+from functools import wraps
+from db_classes import Log
 
-
-with open('../data/secrets.json', 'r') as f:
-    secrets = json.load(f)
-
-username = secrets['username']
-password = secrets['password']
-database_name = secrets['test_db_name']  
-hostname = secrets['hostname']
-
-db_url = f"mysql+pymysql://{username}:{password}@{hostname}/{database_name}"
-
-def log_exception(func):
-    @functools.wraps(func)
+def log_commit_errors(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        db_connect = SingletonDatabaseConnect(db_url)
-        session = db_connect.get_session()
+        session = args[0]  # The session is the first argument of the method
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            try:
-                log = Log(
-                    func=func.__name__,
-                    kwargs=str(kwargs)
-                )
-                session.add(log)
-                session.commit()
-            except Exception as db_e:
-                print(f"Failed to log exception to database: {db_e}")
-            finally:
-                session.close()
-            return str(e)
+            session.rollback()  # Roll back the session to a clean state
+            log = Log(
+                func=func.__name__,
+                kwargs=str(e)  # Store the exception message in kwargs
+            )
+            session.add(log)
+            session.commit()
+            raise
     return wrapper
