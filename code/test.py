@@ -41,18 +41,40 @@ class TestLogger(unittest.TestCase):
     def setUpClass(cls):
         cls.setup = Setup()
         CleanDatabase(cls.setup.session).clean()
-    
+        
     def test_log_exception(self):
-        @log_exception
-        def test_func():
-            raise ValueError("Test exception")
-        result = test_func()
-        self.assertIsInstance(result, str)
-        self.assertEqual(result, "Test exception")
-        logs = self.setup.session.query(Log).all()
-        self.assertEqual(len(logs), 1)
-        self.assertEqual(logs[0].func, 'test_func')
-        self.assertEqual(logs[0].kwargs, 'None')
+            user = self.setup.user_h.create_user(
+                                username="test_log_exception",
+                                password=self.setup.fake.password(),
+                                email=self.setup.fake.email()
+                                )
+            category = self.setup.category_h.create_category(
+                                name="test_log_exception",
+                                description=self.setup.fake.sentence()
+                                )
+            product = self.setup.product_h.create_product(
+                                name="test_log_exception",
+                                description=self.setup.fake.sentence(),
+                                purchase_price=100,
+                                restock_price=50,
+                                quantity=3,
+                                currency='USD',
+                                category_name=category.name
+                                )
+            with self.assertRaises(ValueError):
+                transaction = self.setup.transaction_h.create_transaction(
+                    product_id=product.id,
+                    user_id=user.id,
+                    quantity=5,
+                    transaction_type='purchase',
+                    currency='USD'
+                )
+            log = self.setup.session.query(Log).filter_by(func='commit').first()
+            print(log)
+            self.assertIsNotNone(log)
+            self.assertIn("Not enough stock for purchase", log.kwargs)
+
+
 
 class TestPopulateDatabase(unittest.TestCase):
     @classmethod
