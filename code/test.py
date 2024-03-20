@@ -5,6 +5,8 @@ from db_classes import *
 from faker import Faker as fk
 from db_classes import Base
 from werkzeug.security import generate_password_hash, check_password_hash
+import json
+import logging
 #python -m unittest test.py
 
 class CleanDatabase():
@@ -36,51 +38,37 @@ class Setup():
         self.fake = fk()
         Base.metadata.create_all(self.db_connect.get_engine())
 
-class TestLogger(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.setup = Setup()
-        CleanDatabase(cls.setup.session).clean()
-        
-    def test_log_exception(self):
-            user = self.setup.user_h.create_user(
-                                username="test_log_exception",
-                                password=self.setup.fake.password(),
-                                email=self.setup.fake.email()
-                                )
-            category = self.setup.category_h.create_category(
-                                name="test_log_exception",
-                                description=self.setup.fake.sentence()
-                                )
-            product = self.setup.product_h.create_product(
-                                name="test_log_exception",
-                                description=self.setup.fake.sentence(),
-                                purchase_price=100,
-                                restock_price=50,
-                                quantity=3,
-                                currency='USD',
-                                category_name=category.name
-                                )
-            with self.assertRaises(ValueError):
-                transaction = self.setup.transaction_h.create_transaction(
-                    product_id=product.id,
-                    user_id=user.id,
-                    quantity=5,
-                    transaction_type='purchase',
-                    currency='USD'
-                )
-            log = self.setup.session.query(Log).filter_by(func='commit').first()
-            print(log)
-            self.assertIsNotNone(log)
-            self.assertIn("Not enough stock for purchase", log.kwargs)
-
-
-
 class TestPopulateDatabase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.setup = Setup()
         CleanDatabase(cls.setup.session).clean()
+
+    def setUp(self):
+        self.logger = DatabaseHandler.setup_logger(self.setup.session)
+
+    def test_purchase_product_without_stock(self):
+        user = self.setup.user_h.create_user(
+                            username="test_purchase_product_without_stock",
+                            password=self.setup.fake.password(),
+                            email=self.setup.fake.email()
+                            )
+        product = self.setup.product_h.create_product(
+                            name="test_purchase_product_without_stock",
+                            description=self.setup.fake.sentence(),
+                            purchase_price=100,
+                            restock_price=50,
+                            quantity=10,
+                            currency='USD',
+                            )
+        with self.assertRaises(ValueError):
+            self.setup.transaction_h.create_transaction(
+                            product_id=product.id,
+                            user_id=user.id,
+                            quantity=15,
+                            transaction_type='purchase',
+                            currency='USD'
+                            )
 
     def test_create_admin_users(self):
         fakepassword = self.setup.fake.password()

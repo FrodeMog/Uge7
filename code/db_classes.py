@@ -24,6 +24,7 @@ class Log(BaseModel):
     date = Column(DateTime, default=datetime.now(), nullable=False)
     func = Column(String(100), nullable=False)
     kwargs = Column(String(200))
+    message = Column(String(1000))
 
 class Product(BaseModel):
     __tablename__ = 'products'

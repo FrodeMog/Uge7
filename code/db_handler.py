@@ -1,27 +1,62 @@
 from db_classes import *
-from db_logger import log_commit_errors
+import logging
 
-class DatabaseHandler():
+
+
+class DatabaseHandler(logging.Handler):
     def __init__(self, session):
+        super().__init__()
         self.session = session
 
+    @classmethod
+    def setup_logger(cls, session):
+        logger = logging.getLogger('test')
+        logger.setLevel(logging.DEBUG)
+
+        # Check if the logger already has a DatabaseHandler
+        if not any(isinstance(handler, cls) for handler in logger.handlers):
+            db_handler = cls(session)
+            logger.addHandler(db_handler)
+
+        # Set the logger attribute
+        cls.logger = logger
+
+        return logger
+
+    def emit(self, record):
+        print(self.format(record))
+        log_entry = Log(
+            message=self.format(record),
+            func=record.funcName if record.funcName else 'unknown'
+        )
+        self.session.add(log_entry)
+        self.session.commit()
+
     def add(self, instance):
+        self.logger.debug(f'Adding {instance}')
         self.session.add(instance)
+        self.session.commit()
 
     def delete(self, instance):
+        self.logger.debug(f'Deleting {instance}')
         self.session.delete(instance)
+        self.session.commit()
 
     def update(self, instance, **kwargs):
+        self.logger.debug(f'Updating {instance} with {kwargs}')
         self.session.query(instance).update(kwargs)
+        self.session.commit()
 
-    @log_commit_errors
     def commit(self):
+        self.logger.debug('Committing changes')
         self.session.commit()
 
     def rollback(self):
+        self.logger.debug('Rolling back changes')
         self.session.rollback()
     
     def close(self):
+        self.logger.debug('Closing session')
         self.session.close()
 
     def get_by_id(self, model, id):
