@@ -1,7 +1,6 @@
 from db_classes import *
 import logging
 from db_decorators import log_to_db, handle_exceptions_and_rollback
-from sqlalchemy.exc import SQLAlchemyError
 
 class DatabaseHandler(logging.Handler):
     def __init__(self, session):
