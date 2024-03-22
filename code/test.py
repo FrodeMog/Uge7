@@ -4,9 +4,8 @@ from db_handler import *
 from db_classes import *
 from faker import Faker as fk
 from db_classes import Base
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 import json
-import logging
 #python -m unittest test.py
 
 class CleanDatabase():
@@ -43,9 +42,6 @@ class TestPopulateDatabase(unittest.TestCase):
     def setUpClass(cls):
         cls.setup = Setup()
         CleanDatabase(cls.setup.session).clean()
-
-    def setUp(self):
-        self.logger = DatabaseHandler.setup_logger(self.setup.session)
 
     def test_purchase_product_without_stock(self):
         user = self.setup.user_h.create_user(

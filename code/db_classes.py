@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Text
 from sqlalchemy.orm import declarative_base, relationship, validates
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -23,8 +23,9 @@ class Log(BaseModel):
     uuid = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     date = Column(DateTime, default=datetime.now(), nullable=False)
     func = Column(String(100), nullable=False)
-    kwargs = Column(String(200))
-    message = Column(String(1000))
+    kwargs = Column(Text)
+    status = Column(String(10), nullable=False)
+    message = Column(Text)
 
 class Product(BaseModel):
     __tablename__ = 'products'
@@ -32,7 +33,7 @@ class Product(BaseModel):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     uuid = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False)
     name = Column(String(50), unique=True, nullable=False)
-    description = Column(String(200))
+    description = Column(Text)
     category_id = Column(Integer, ForeignKey('categories.id'))
     purchase_price = Column(Float)
     restock_price = Column(Float)
@@ -70,7 +71,7 @@ class Category(BaseModel):
     
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     name = Column(String(50), unique=True, nullable=False)
-    description = Column(String(200))
+    description = Column(Text)
     parent_id = Column(Integer, ForeignKey('categories.id')) # Parentid None means it's a top-level category
     
     parent = relationship('Category', remote_side=[id], backref='subcategories')
@@ -123,7 +124,7 @@ class User(BaseModel):
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(300), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
-    type = Column(String(50), default='user')  # admin_user, user
+    type = Column(String(20), default='user')  # admin_user, user
 
     __mapper_args__ = {
         'polymorphic_identity':'user',

@@ -1,62 +1,33 @@
 from db_classes import *
 import logging
-
-
+from db_logger import log_to_db
 
 class DatabaseHandler(logging.Handler):
     def __init__(self, session):
         super().__init__()
         self.session = session
 
-    @classmethod
-    def setup_logger(cls, session):
-        logger = logging.getLogger('test')
-        logger.setLevel(logging.DEBUG)
-
-        # Check if the logger already has a DatabaseHandler
-        if not any(isinstance(handler, cls) for handler in logger.handlers):
-            db_handler = cls(session)
-            logger.addHandler(db_handler)
-
-        # Set the logger attribute
-        cls.logger = logger
-
-        return logger
-
-    def emit(self, record):
-        print(self.format(record))
-        log_entry = Log(
-            message=self.format(record),
-            func=record.funcName if record.funcName else 'unknown'
-        )
-        self.session.add(log_entry)
-        self.session.commit()
-
     def add(self, instance):
-        self.logger.debug(f'Adding {instance}')
         self.session.add(instance)
         self.session.commit()
 
     def delete(self, instance):
-        self.logger.debug(f'Deleting {instance}')
         self.session.delete(instance)
         self.session.commit()
 
     def update(self, instance, **kwargs):
-        self.logger.debug(f'Updating {instance} with {kwargs}')
         self.session.query(instance).update(kwargs)
         self.session.commit()
 
     def commit(self):
-        self.logger.debug('Committing changes')
         self.session.commit()
 
     def rollback(self):
-        self.logger.debug('Rolling back changes')
+        #self.logger.debug('Rolling back changes')
         self.session.rollback()
     
     def close(self):
-        self.logger.debug('Closing session')
+        #self.logger.debug('Closing session')
         self.session.close()
 
     def get_by_id(self, model, id):
@@ -72,6 +43,7 @@ class DatabaseHandler(logging.Handler):
         return self.session.query(model).filter_by(**filters).all()
     
 class CategoryHandler(DatabaseHandler):
+    @log_to_db
     def create_category(self, name, description, parent_id=None, parent_name=None):
         # Check if there are any categories in the database
         if not self.get_all(Category):
@@ -101,6 +73,7 @@ class CategoryHandler(DatabaseHandler):
         self.commit()
         return category
     
+    @log_to_db
     def update_category(self, category_id, **kwargs):
         category = self.get_by(Category, id=category_id)
         if category:
@@ -109,6 +82,7 @@ class CategoryHandler(DatabaseHandler):
             self.commit()
         return category
     
+    @log_to_db
     def delete_category(self, category_id):
         category = self.get_by_id(Category, category_id)
         if category:
@@ -117,6 +91,7 @@ class CategoryHandler(DatabaseHandler):
         return category
 
 class ProductHandler(DatabaseHandler):
+    @log_to_db
     def create_product(self, name, description, purchase_price, restock_price, currency, quantity, category_id=None, category_name=None):
         if category_name is not None:
             category = self.get_by(Category, name=category_name)
@@ -146,6 +121,7 @@ class ProductHandler(DatabaseHandler):
         self.commit()
         return product
 
+    @log_to_db
     def update_product(self, product_id, **kwargs):
         product = self.get_by(Product, id=product_id)
         if product:
@@ -155,6 +131,7 @@ class ProductHandler(DatabaseHandler):
             self.commit()
         return product
     
+    @log_to_db
     def delete_product(self, product_id):
         product = self.get_by_id(Product, product_id)
         if product:
@@ -163,6 +140,7 @@ class ProductHandler(DatabaseHandler):
         return product
     
 class TransactionHandler(DatabaseHandler):
+    @log_to_db
     def create_transaction(self, product_id, user_id, quantity, transaction_type, currency):
         product = self.get_by(Product, id=product_id)
         if product is None:
@@ -195,6 +173,7 @@ class TransactionHandler(DatabaseHandler):
         return transaction
 
 class UserHandler(DatabaseHandler):
+    @log_to_db
     def create_user(self, username, password, email):
         user = User()
         user.set_username(username)
@@ -204,6 +183,7 @@ class UserHandler(DatabaseHandler):
         self.commit()
         return user
     
+    @log_to_db
     def update_user(self, user_id, **kwargs):
         user = self.get_by(User, id=user_id)
         if user:
@@ -212,6 +192,7 @@ class UserHandler(DatabaseHandler):
             self.commit()
         return user
     
+    @log_to_db
     def delete_user(self, user_id):
         user = self.get_by_id(User, user_id)
         if user:
@@ -220,6 +201,7 @@ class UserHandler(DatabaseHandler):
         return user
 
 class AdminUserHandler(UserHandler):
+    @log_to_db
     def create_admin_user(self, username, password, email, admin_status='regular'):
         admin_user = AdminUser(
             username=username,
@@ -231,6 +213,7 @@ class AdminUserHandler(UserHandler):
         self.commit()
         return admin_user
     
+    @log_to_db
     def update_admin_user(self, user_id, **kwargs):
         user = self.get_by(AdminUser, id=user_id)
         if user:
@@ -239,6 +222,7 @@ class AdminUserHandler(UserHandler):
             self.commit()
         return user
     
+    @log_to_db
     def delete_admin_user(self, user_id):
         user = self.get_by_id(AdminUser, user_id)
         if user:
