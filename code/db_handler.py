@@ -1,6 +1,7 @@
 from db_classes import *
 import logging
-from db_logger import log_to_db
+from db_decorators import log_to_db, handle_exceptions_and_rollback
+from sqlalchemy.exc import SQLAlchemyError
 
 class DatabaseHandler(logging.Handler):
     def __init__(self, session):
@@ -23,11 +24,9 @@ class DatabaseHandler(logging.Handler):
         self.session.commit()
 
     def rollback(self):
-        #self.logger.debug('Rolling back changes')
         self.session.rollback()
     
     def close(self):
-        #self.logger.debug('Closing session')
         self.session.close()
 
     def get_by_id(self, model, id):
@@ -43,6 +42,7 @@ class DatabaseHandler(logging.Handler):
         return self.session.query(model).filter_by(**filters).all()
     
 class CategoryHandler(DatabaseHandler):
+    @handle_exceptions_and_rollback
     @log_to_db
     def create_category(self, name, description, parent_id=None, parent_name=None):
         # Check if there are any categories in the database
@@ -73,6 +73,7 @@ class CategoryHandler(DatabaseHandler):
         self.commit()
         return category
     
+    @handle_exceptions_and_rollback
     @log_to_db
     def update_category(self, category_id, **kwargs):
         category = self.get_by(Category, id=category_id)
@@ -82,6 +83,7 @@ class CategoryHandler(DatabaseHandler):
             self.commit()
         return category
     
+    @handle_exceptions_and_rollback
     @log_to_db
     def delete_category(self, category_id):
         category = self.get_by_id(Category, category_id)
@@ -91,6 +93,7 @@ class CategoryHandler(DatabaseHandler):
         return category
 
 class ProductHandler(DatabaseHandler):
+    @handle_exceptions_and_rollback
     @log_to_db
     def create_product(self, name, description, purchase_price, restock_price, currency, quantity, category_id=None, category_name=None):
         if category_name is not None:
@@ -121,6 +124,7 @@ class ProductHandler(DatabaseHandler):
         self.commit()
         return product
 
+    @handle_exceptions_and_rollback
     @log_to_db
     def update_product(self, product_id, **kwargs):
         product = self.get_by(Product, id=product_id)
@@ -131,6 +135,7 @@ class ProductHandler(DatabaseHandler):
             self.commit()
         return product
     
+    @handle_exceptions_and_rollback
     @log_to_db
     def delete_product(self, product_id):
         product = self.get_by_id(Product, product_id)
@@ -140,6 +145,7 @@ class ProductHandler(DatabaseHandler):
         return product
     
 class TransactionHandler(DatabaseHandler):
+    @handle_exceptions_and_rollback
     @log_to_db
     def create_transaction(self, product_id, user_id, quantity, transaction_type, currency):
         product = self.get_by(Product, id=product_id)
@@ -173,6 +179,7 @@ class TransactionHandler(DatabaseHandler):
         return transaction
 
 class UserHandler(DatabaseHandler):
+    @handle_exceptions_and_rollback
     @log_to_db
     def create_user(self, username, password, email):
         user = User()
@@ -183,6 +190,7 @@ class UserHandler(DatabaseHandler):
         self.commit()
         return user
     
+    @handle_exceptions_and_rollback
     @log_to_db
     def update_user(self, user_id, **kwargs):
         user = self.get_by(User, id=user_id)
@@ -192,6 +200,7 @@ class UserHandler(DatabaseHandler):
             self.commit()
         return user
     
+    @handle_exceptions_and_rollback
     @log_to_db
     def delete_user(self, user_id):
         user = self.get_by_id(User, user_id)
@@ -201,6 +210,7 @@ class UserHandler(DatabaseHandler):
         return user
 
 class AdminUserHandler(UserHandler):
+    @handle_exceptions_and_rollback
     @log_to_db
     def create_admin_user(self, username, password, email, admin_status='regular'):
         admin_user = AdminUser(
@@ -213,6 +223,7 @@ class AdminUserHandler(UserHandler):
         self.commit()
         return admin_user
     
+    @handle_exceptions_and_rollback
     @log_to_db
     def update_admin_user(self, user_id, **kwargs):
         user = self.get_by(AdminUser, id=user_id)
@@ -222,6 +233,7 @@ class AdminUserHandler(UserHandler):
             self.commit()
         return user
     
+    @handle_exceptions_and_rollback
     @log_to_db
     def delete_admin_user(self, user_id):
         user = self.get_by_id(AdminUser, user_id)

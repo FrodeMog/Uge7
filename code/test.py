@@ -5,6 +5,7 @@ from db_classes import *
 from faker import Faker as fk
 from db_classes import Base
 from werkzeug.security import check_password_hash
+from sqlalchemy import desc
 #python -m unittest test.py
 
 class CleanDatabase():
@@ -34,6 +35,22 @@ class TestPopulateDatabase(unittest.TestCase):
     def setUpClass(cls):
         cls.setup = Setup()
         CleanDatabase(cls.setup.session).clean()
+
+    def test_unknown_error(self):
+        try:
+            user = self.setup.user_h.create_user(
+                username="test_unknown_error",
+                password=self.setup.fake.password(),
+                email="invalidemail.com"
+            )
+        except ValueError:
+            pass
+
+        # Get the latest log entry
+        latest_log = self.setup.db_h.session.query(Log).order_by(desc(Log.id)).first()
+        self.assertIsNotNone(latest_log)
+        self.assertIsNotNone(latest_log.message)
+        self.assertTrue('Invalid email' in latest_log.message)
 
     def test_purchase_product_without_stock(self):
         user = self.setup.user_h.create_user(
