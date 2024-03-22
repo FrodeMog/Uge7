@@ -28,7 +28,6 @@ class Setup():
         self.product_h = ProductHandler(self.session)
         self.transaction_h = TransactionHandler(self.session)
         self.fake = fk()
-        Base.metadata.create_all(self.db_connect.get_engine())
 
 class TestPopulateDatabase(unittest.TestCase):
     @classmethod
@@ -50,6 +49,7 @@ class TestPopulateDatabase(unittest.TestCase):
         latest_log = self.setup.db_h.session.query(Log).order_by(desc(Log.id)).first()
         self.assertIsNotNone(latest_log)
         self.assertIsNotNone(latest_log.message)
+        self.assertTrue('FAIL' in latest_log.status)
         self.assertTrue('Invalid email' in latest_log.message)
 
     def test_purchase_product_without_stock(self):
