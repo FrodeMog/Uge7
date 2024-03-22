@@ -6,6 +6,7 @@ from faker import Faker as fk
 from db_classes import Base
 from werkzeug.security import check_password_hash
 from sqlalchemy import desc
+from sqlalchemy.exc import SQLAlchemyError
 #python -m unittest test.py
 
 class CleanDatabase():
@@ -35,22 +36,101 @@ class TestPopulateDatabase(unittest.TestCase):
         cls.setup = Setup()
         CleanDatabase(cls.setup.session).clean()
 
-    def test_unknown_error(self):
+    def test_invalid_email(self):
         try:
             user = self.setup.user_h.create_user(
                 username="test_unknown_error",
                 password=self.setup.fake.password(),
                 email="invalidemail.com"
             )
-        except ValueError:
+        except (ValueError, SQLAlchemyError):
             pass
-
-        # Get the latest log entry
         latest_log = self.setup.db_h.session.query(Log).order_by(desc(Log.id)).first()
         self.assertIsNotNone(latest_log)
         self.assertIsNotNone(latest_log.message)
         self.assertTrue('FAIL' in latest_log.status)
         self.assertTrue('Invalid email' in latest_log.message)
+
+    def test_not_real_admin_status(self):
+        try:
+            admin_user = self.setup.admin_user_h.create_admin_user(
+            username="test_unknown_error",
+            password=self.setup.fake.password(),
+            email="validd@email.com",
+            admin_status="not_real_status"
+            )
+        except (ValueError, SQLAlchemyError):
+            pass
+        latest_log = self.setup.db_h.session.query(Log).order_by(desc(Log.id)).first()
+        self.assertIsNotNone(latest_log)
+        self.assertIsNotNone(latest_log.message)
+        self.assertTrue('FAIL' in latest_log.status)
+        self.assertTrue('Invalid admin status' in latest_log.message)
+
+    def test_user_already_exists(self):
+        try:
+            user = self.setup.user_h.create_user(
+                username="same_name",
+                password=self.setup.fake.password(),
+                email="valid@email.com"
+            )
+            user = self.setup.user_h.create_user(
+                username="same_name",
+                password=self.setup.fake.password(),
+                email="validtest@email.com"
+            )
+        except (ValueError, SQLAlchemyError):
+            pass
+        latest_log = self.setup.db_h.session.query(Log).order_by(desc(Log.id)).first()
+        self.assertIsNotNone(latest_log)
+        self.assertIsNotNone(latest_log.message)
+        self.assertTrue('FAIL' in latest_log.status)
+        self.assertTrue('A user with this username already exists' in latest_log.message)
+
+    def test_user_email_already_exists(self):
+        try:
+            user = self.setup.user_h.create_user(
+                username="same_email",
+                password=self.setup.fake.password(),
+                email="same_email@email.com"
+            )
+            admin_user = self.setup.admin_user_h.create_admin_user(
+                username="admin_same_email",
+                password=self.setup.fake.password(),
+                email="same_email@email.com"
+            )
+        except (ValueError, SQLAlchemyError):
+            pass
+        latest_log = self.setup.db_h.session.query(Log).order_by(desc(Log.id)).first()
+        self.assertIsNotNone(latest_log)
+        self.assertIsNotNone(latest_log.message)
+        self.assertTrue('FAIL' in latest_log.status)
+        self.assertTrue('A user with this email already exists' in latest_log.message)
+    
+    def test_sql_injection(self):
+        try:
+            user = self.setup.user_h.create_user(
+                username="test_sql_injection; DROP TABLE users;",
+                password=self.setup.fake.password(),
+                email="test@email.com"
+            )
+        except (ValueError, SQLAlchemyError):
+            pass
+        users = self.setup.db_h.session.query(User).all()
+        self.assertTrue(len(users) > 0)
+    
+    def test_long_category_name(self):
+        try:
+            category = self.setup.category_h.create_category(
+                name="a" * 51,
+                description=self.setup.fake.sentence()
+            )
+        except (ValueError, SQLAlchemyError):
+            pass
+        latest_log = self.setup.db_h.session.query(Log).order_by(desc(Log.id)).first()
+        self.assertIsNotNone(latest_log)
+        self.assertIsNotNone(latest_log.message)
+        self.assertTrue('FAIL' in latest_log.status)
 
     def test_purchase_product_without_stock(self):
         user = self.setup.user_h.create_user(
