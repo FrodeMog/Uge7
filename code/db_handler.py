@@ -1,8 +1,7 @@
 from db_classes import *
-import logging
 from db_decorators import log_to_db, handle_exceptions_and_rollback
 
-class DatabaseHandler(logging.Handler):
+class DatabaseHandler():
     def __init__(self, session):
         super().__init__()
         self.session = session

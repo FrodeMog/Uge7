@@ -5,8 +5,7 @@ from db_classes import Log
 from sqlalchemy.exc import SQLAlchemyError
 import json
 
-db_connect = SingletonDatabaseConnect.connect_from_config()
-session = db_connect.get_session()
+session = SingletonDatabaseConnect.connect_from_config().get_session()
 
 def log_to_db(func):
     @wraps(func)

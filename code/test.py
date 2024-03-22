@@ -20,8 +20,7 @@ class CleanDatabase():
 
 class Setup():
     def __init__(self):
-        self.db_connect = SingletonDatabaseConnect.connect_from_config()
-        self.session = self.db_connect.get_session()
+        self.session = SingletonDatabaseConnect.connect_from_config().get_session()
         self.db_h = DatabaseHandler(self.session)
         self.user_h = UserHandler(self.session)
         self.admin_user_h = AdminUserHandler(self.session)
