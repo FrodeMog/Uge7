@@ -5,13 +5,29 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import re
 import json
-import typing
-import sqlalchemy as sa
+
+with open('../data/currencies.json', 'r') as f:
+    currencies_data = json.load(f)
+
+ALLOWED_CURRENCIES = currencies_data['allowed_currencies']
+ALLOWED_TRANSACTION_TYPES = ['purchase', 'refund', 'restock']
+ALLOWED_ADMIN_STATUSES = ['none', 'regular', 'full']
+
+def validate_currency(currency):
+    currency = currency.lower()
+    if currency not in ALLOWED_CURRENCIES:
+        raise ValueError(f"Invalid currency '{currency}', allowed currencies are {ALLOWED_CURRENCIES}")
+    return currency
 
 Base = declarative_base()
-
 class BaseModel(Base):
     __abstract__ = True
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            if value is None and not self.__table__.c[key].nullable:
+                raise ValueError(f"{key} cannot be null")
+            setattr(self, key, value)
 
     def __repr__(self):
         return str({column.name: getattr(self, column.name) for column in self.__table__.columns if hasattr(self, column.name)})
@@ -58,13 +74,7 @@ class Product(BaseModel):
     
     @validates('currency')
     def validate_currency(self, key, currency):
-        with open('../data/currencies.json', 'r') as f:
-            data = json.load(f)
-        allowed_currencies = data['allowed_currencies']
-        currency = currency.lower()
-        if currency not in allowed_currencies:
-            raise ValueError(f"Invalid currency '{currency}', allowed currencies are {allowed_currencies}")
-        return currency
+        return validate_currency(currency)
 
 class Category(BaseModel):
     __tablename__ = 'categories'
@@ -95,9 +105,8 @@ class Transaction(BaseModel):
 
     @validates('transaction_type')
     def validate_transaction_type(self, key, transaction_type):
-        allowed_types = ['purchase', 'refund', 'restock']
-        if transaction_type not in allowed_types:
-            raise ValueError(f"Invalid transaction type '{transaction_type}', allowed types are {allowed_types}")
+        if transaction_type not in ALLOWED_TRANSACTION_TYPES:
+            raise ValueError(f"Invalid transaction type '{transaction_type}', allowed types are {ALLOWED_TRANSACTION_TYPES}")
         return transaction_type
     
     @validates('quantity')
@@ -108,13 +117,7 @@ class Transaction(BaseModel):
     
     @validates('currency')
     def validate_currency(self, key, currency):
-        with open('../data/currencies.json', 'r') as f:
-            data = json.load(f)
-        allowed_currencies = data['allowed_currencies']
-        currency = currency.lower()
-        if currency not in allowed_currencies:
-            raise ValueError(f"Invalid currency '{currency}', allowed currencies are {allowed_currencies}")
-        return currency
+        return validate_currency(currency)
 
 class User(BaseModel):
     __tablename__ = 'users'
@@ -165,7 +168,6 @@ class AdminUser(User):
 
     @validates('admin_status')
     def validate_admin_status(self, key, status):
-        allowed_statuses = ['none', 'regular', 'full']
-        if status not in allowed_statuses:
-            raise ValueError(f"Invalid admin status '{status}', allowed statuses are {allowed_statuses}")
+        if status not in ALLOWED_ADMIN_STATUSES:
+            raise ValueError(f"Invalid admin status '{status}', allowed statuses are {ALLOWED_ADMIN_STATUSES}")
         return status
