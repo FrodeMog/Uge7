@@ -1,4 +1,6 @@
 {
     "test_mode": "true",
-    "adapter": "mysql+pymysql"
+    "adapter": "mysql+pymysql",
+    "log_limit": 100,
+    "log_limit_interval": 60
 }
