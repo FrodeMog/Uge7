@@ -1,0 +1,4 @@
+{
+    "test_mode": "true",
+    "adapter": "mysql+pymysql"
+}

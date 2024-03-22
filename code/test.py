@@ -5,7 +5,6 @@ from db_classes import *
 from faker import Faker as fk
 from db_classes import Base
 from werkzeug.security import check_password_hash
-import json
 #python -m unittest test.py
 
 class CleanDatabase():
@@ -19,14 +18,7 @@ class CleanDatabase():
 
 class Setup():
     def __init__(self):
-        with open('../data/secrets.json', 'r') as f:
-            secrets = json.load(f)
-        username = secrets['username']
-        password = secrets['password']
-        database_name = secrets['test_db_name']  
-        hostname = secrets['hostname']
-        db_url = f"mysql+pymysql://{username}:{password}@{hostname}/{database_name}"
-        self.db_connect = SingletonDatabaseConnect(db_url)
+        self.db_connect = SingletonDatabaseConnect.connect_from_config()
         self.session = self.db_connect.get_session()
         self.db_h = DatabaseHandler(self.session)
         self.user_h = UserHandler(self.session)
