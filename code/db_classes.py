@@ -1,6 +1,7 @@
 import uuid
 from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Text
 from sqlalchemy.orm import declarative_base, relationship, validates
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import re
@@ -20,6 +21,7 @@ def validate_currency(currency):
     return currency
 
 Base = declarative_base()
+
 class BaseModel(Base):
     __abstract__ = True
 
@@ -27,11 +29,12 @@ class BaseModel(Base):
         for key, value in kwargs.items():
             if value is None and not self.__table__.c[key].nullable:
                 raise ValueError(f"{key} cannot be null")
+            if isinstance(self.__table__.c[key].type, String) and self.__table__.c[key].type.length is not None and len(value) > self.__table__.c[key].type.length:
+                raise SQLAlchemyError(f"{key} must be less than {self.__table__.c[key].type.length} characters")
             setattr(self, key, value)
 
     def __repr__(self):
         return str({column.name: getattr(self, column.name) for column in self.__table__.columns if hasattr(self, column.name)})
-    
 class Log(BaseModel):
     __tablename__ = 'logs'
     
@@ -150,17 +153,19 @@ class User(BaseModel):
     def validate_username(self, key, username):
         if len(username) < 3:
             raise ValueError("Username must be at least 3 characters long")
+        if not re.match("^[A-Za-z0-9_]+$", username):
+            raise ValueError("Username can only contain letters, numbers, and underscores")
         return username.lower()
 
     @validates('email')
     def validate_email(self, key, email):
-        pattern = r"[^@]+@[^@]+\.[^@]+"
+        pattern = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
         if not re.match(pattern, email):
-            raise ValueError("Invalid email")
+            raise ValueError("Invalid email address")
         return email
 
 class AdminUser(User):
-    admin_status = Column(String(50), default='none')  # super, regular, etc.
+    admin_status = Column(String(50), default='none')
 
     __mapper_args__ = {
         'polymorphic_identity':'admin_user',
@@ -169,5 +174,5 @@ class AdminUser(User):
     @validates('admin_status')
     def validate_admin_status(self, key, status):
         if status not in ALLOWED_ADMIN_STATUSES:
-            raise ValueError(f"Invalid admin status '{status}', allowed statuses are {ALLOWED_ADMIN_STATUSES}")
+            raise ValueError(f"Invalid admin status")
         return status
