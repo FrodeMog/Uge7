@@ -181,6 +181,14 @@ class UserHandler(DatabaseHandler):
     @handle_exceptions_and_rollback
     @log_to_db
     def create_user(self, username, password, email):
+        existing_user_with_same_username = self.session.query(User).filter(User.username == username).first()
+        if existing_user_with_same_username is not None:
+            raise ValueError("A user with this username already exists")
+
+        existing_user_with_same_email = self.session.query(User).filter(User.email == email).first()
+        if existing_user_with_same_email is not None:
+            raise ValueError("A user with this email already exists")
+
         user = User()
         user.set_username(username)
         user.set_email(email)
@@ -212,11 +220,18 @@ class AdminUserHandler(UserHandler):
     @handle_exceptions_and_rollback
     @log_to_db
     def create_admin_user(self, username, password, email, admin_status='regular'):
-        admin_user = AdminUser(
-            username=username,
-            email=email,
-            admin_status=admin_status
-        )
+        existing_user_with_same_username = self.session.query(User).filter(User.username == username).first()
+        if existing_user_with_same_username is not None:
+            raise ValueError("A user with this username already exists")
+
+        existing_user_with_same_email = self.session.query(User).filter(User.email == email).first()
+        if existing_user_with_same_email is not None:
+            raise ValueError("A user with this email already exists")
+
+        admin_user = AdminUser()
+        admin_user.set_username(username)
+        admin_user.set_email(email)
+        admin_user.admin_status = admin_status
         admin_user.set_password(password)
         self.add(admin_user)
         self.commit()
