@@ -5,10 +5,11 @@ from db_classes import *
 from faker import Faker as fk
 from db_classes import Base
 from werkzeug.security import check_password_hash
-from sqlalchemy import desc
+from sqlalchemy import desc, func, select, text
+import logging
 from sqlalchemy.exc import SQLAlchemyError
 import asyncio
-#python -m unittest test_async.py
+#python -m unittest -v test_async.py
 
 class CleanDatabase():
     def __init__(self, session):
@@ -37,27 +38,81 @@ class Setup():
         self.product_h = AsyncProductHandler(self.session)
         self.transaction_h = AsyncTransactionHandler(self.session)
 
+    def get_new_session(self):
+        return self.db_connect.get_new_session()
+
+
 class TestPopulateDatabase(unittest.IsolatedAsyncioTestCase):
     @classmethod
-    async def asyncSetUp(cls):
-        cls.setup = Setup()
-        await cls.setup.initialize()
-        await CleanDatabase(cls.setup.session).clean()
+    def setUpClass(cls):
+        cls.loop = asyncio.get_event_loop()
+        cls.loop.run_until_complete(cls.asyncSetUpClass())
 
     @classmethod
-    async def asyncTearDown(cls):
-        await cls.setup.session.close()
-        await cls.setup.engine.dispose()  # Close the engine
+    async def asyncSetUpClass(cls):
+        cls.setup = Setup()
+        await cls.setup.initialize()
+        cls.session = AsyncSession(cls.setup.engine)
+        await CleanDatabase(cls.session).clean()
+
+    async def asyncSetUp(self):
+        self.session = self.__class__.session
+
+        self.setup.db_h.session = self.session
+        self.setup.user_h.session = self.session
+        self.setup.admin_user_h.session = self.session
+        self.setup.category_h.session = self.session
+        self.setup.product_h.session = self.session
+        self.setup.transaction_h.session = self.session
+
+        await self.session.flush() 
+
+    async def asyncTearDown(self):
+        await self.session.close()
+        await self.setup.engine.dispose()
+
+    async def test_invalid_email(self):
+        async with self.setup.get_new_session() as session:
+            self.setup.user_h.session = session
+            try:
+                user = await self.setup.user_h.create_user(
+                    username="test_invalid_email",
+                    password=self.setup.fake.password(),
+                    email="invalidemail.com"
+                )
+            except Exception:
+                pass
+            queried_log = select(Log).where(Log.kwargs.contains({"test_invalid_email"}))
+            result = await session.execute(queried_log)
+            queried_log = result.scalars().first()
+            if queried_log is not None:
+                self.assertEqual(queried_log.status, "FAIL")
+            else:
+                self.fail("No log entry found")
 
     async def test_create_user(self):
-        fakepassword = self.setup.fake.password()
-        user = await self.setup.user_h.create_user(
-            username="test_create_user",
-            password=fakepassword,
-            email=self.setup.fake.email()
-        )
-        queried_user = await self.setup.db_h.get_by(User, username="test_create_user")
-        self.assertTrue(check_password_hash(queried_user.password, fakepassword))
+        async with self.setup.get_new_session() as session:
+            self.setup.user_h.session = session
+            fakepassword = self.setup.fake.password()
+            user = await self.setup.user_h.create_user(
+                username="test_create_user",
+                password=fakepassword,
+                email=self.setup.fake.email()
+            )
+            queried_user = await self.setup.db_h.get_by(User, username="test_create_user")
+            self.assertTrue(check_password_hash(queried_user.password, fakepassword))
+
+    async def test_create_admin_user(self):
+        async with self.setup.get_new_session() as session:
+            self.setup.admin_user_h.session = session
+            fakepassword = self.setup.fake.password()
+            user = await self.setup.admin_user_h.create_admin_user(
+                username="test_create_admin_user",
+                password=fakepassword,
+                email=self.setup.fake.email()
+            )
+            queried_user = await self.setup.db_h.get_by(User, username="test_create_admin_user")
+            self.assertTrue(check_password_hash(queried_user.password, fakepassword))
 
 class CustomTestResult(unittest.TextTestResult):
     def printErrors(self):

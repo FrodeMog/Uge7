@@ -1,5 +1,5 @@
 from db_classes import *
-from db_decorators import log_to_db, handle_exceptions_and_rollback
+from db_decorators_async import log_to_db, handle_exceptions_and_rollback
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

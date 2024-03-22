@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from contextlib import asynccontextmanager
 import json
 
 class SingletonDatabaseConnect:
@@ -52,16 +53,22 @@ class AsyncDatabaseConnect:
     def __init__(self, db_url):
         self.engine = create_async_engine(
             db_url,
-            connect_args={'connect_timeout': 5}
+            connect_args={'connect_timeout': 5},
+            isolation_level="READ COMMITTED"
         )
         self.session = sessionmaker(self.engine, expire_on_commit=False, class_=AsyncSession)
 
-    async def get_session(self):
-        async with self.session.begin() as session:
-            return session
-
-    def get_engine(self):
-        return self.engine
+    @asynccontextmanager
+    async def get_new_session(self):
+        session = AsyncSession(self.engine)
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
 
     @staticmethod
     async def connect_from_config():
