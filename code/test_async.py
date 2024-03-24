@@ -21,10 +21,79 @@ class CleanDatabase():
         Base.metadata.create_all(self.engine)
 
 class TestAsyncDatabaseHandler(unittest.IsolatedAsyncioTestCase):
+    
+    async def test_create_category(self):
+        async with AsyncDatabaseHandler("Category") as db_h:
+            try:
+                category = await db_h.create(name="test_create_category")
+                queried_category = await db_h.get_by(Category, name="test_create_category")
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create category")
+        self.assertIsNotNone(queried_category)
+
+    async def test_create_product(self):
+        async with AsyncDatabaseHandler("Product") as db_h:
+            try:
+                product = await db_h.create(
+                    name="test_create_product",
+                    description="test description",
+                    category_id=1,
+                    purchase_price=1.0,
+                    restock_price=1.0,
+                    currency="USD",
+                    quantity=1
+                )
+                queried_product = await db_h.get_by(Product, name="test_create_product")
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create product")
+        self.assertIsNotNone(queried_product)
+    
+    async def test_create_transaction(self):
+        async with AsyncDatabaseHandler("Product") as db_h:
+            try:
+                product = await db_h.create(
+                    name="test_create_transaction",
+                    description="test description",
+                    category_id=1,
+                    purchase_price=1.0,
+                    restock_price=1.0,
+                    currency="USD",
+                    quantity=1
+                )
+                query_product = await db_h.get_by(Product, name="test_create_transaction")
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create product")
+        async with AsyncDatabaseHandler("User") as db_h:
+            try:
+                user = await db_h.create(
+                    username="test_create_transaction",
+                    password="testpassword",
+                    email="test_create_transaction@test.com"
+                )
+                queried_user = await db_h.get_by(User, username="test_create_transaction")
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create user")
+        async with AsyncDatabaseHandler("Transaction") as db_h:
+            try:
+                transaction = await db_h.create(
+                    product_id=query_product.id,
+                    user_id=queried_user.id,
+                    transaction_type="purchase",
+                    quantity=1,
+                    currency="USD",
+                )
+                queried_transaction = await db_h.get_by(Transaction, product_id=query_product.id, user_id=queried_user.id)
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create transaction")
+        self.assertIsNotNone(queried_transaction)
 
     async def test_multiple_sessions(self):
         fake = fk()
-
         async with AsyncDatabaseHandler("User") as db_h:
             try:
                 fakepassword = fake.password()
@@ -50,8 +119,12 @@ class TestAsyncDatabaseHandler(unittest.IsolatedAsyncioTestCase):
                 self.fail("Failed to create user")
         
         async with AsyncDatabaseHandler("User") as db_h:
-            queried_user1 = await db_h.get_by(User, username="test_multiple_sessions1")
-            queried_user2 = await db_h.get_by(User, username="test_multiple_sessions2")
+            try:
+                queried_user1 = await db_h.get_by(User, username="test_multiple_sessions1")
+                queried_user2 = await db_h.get_by(User, username="test_multiple_sessions2")
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to query user")
             
         self.assertIsNotNone(queried_user1)
         self.assertIsNotNone(queried_user2)
