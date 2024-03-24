@@ -1,0 +1,6 @@
+{
+    "test_mode": "true",
+    "adapter": "mysql+aiomysql",
+    "log_limit": 100,
+    "log_limit_interval": 60
+}
