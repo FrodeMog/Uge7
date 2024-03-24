@@ -38,7 +38,7 @@ class TestPopulateDatabase(unittest.TestCase):
     def test_invalid_email(self):
         try:
             user = self.setup.user_h.create_user(
-                username="test_unknown_error",
+                username="test_invalid_email",
                 password=self.setup.fake.password(),
                 email="invalidemail.com"
             )
@@ -53,7 +53,7 @@ class TestPopulateDatabase(unittest.TestCase):
     def test_not_real_admin_status(self):
         try:
             admin_user = self.setup.admin_user_h.create_admin_user(
-            username="test_unknown_error",
+            username="test_not_real_admin_status",
             password=self.setup.fake.password(),
             email="validd@email.com",
             admin_status="not_real_status"
