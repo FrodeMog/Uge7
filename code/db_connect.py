@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from contextlib import asynccontextmanager
 import json
+import asyncio
 
 class SingletonDatabaseConnect:
     instance = None
@@ -53,23 +54,19 @@ class AsyncDatabaseConnect:
     def __init__(self, db_url):
         self.engine = create_async_engine(
             db_url,
-            connect_args={'connect_timeout': 5},
-            isolation_level="READ COMMITTED"
+            connect_args={'connect_timeout': 5}
+            #,echo=True
         )
-        self.session = sessionmaker(self.engine, expire_on_commit=False, class_=AsyncSession)
+        self.sessionmaker = sessionmaker(self.engine, expire_on_commit=False, class_=AsyncSession)
 
-    @asynccontextmanager
     async def get_new_session(self):
-        session = AsyncSession(self.engine)
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+        self.session = self.sessionmaker()
+        return self.session
 
+    async def close(self):
+        await self.session.close()
+        await self.engine.dispose()
+            
     @staticmethod
     async def connect_from_config():
         with open('../data/secrets.json', 'r') as f:

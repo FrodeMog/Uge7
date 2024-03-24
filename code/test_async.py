@@ -1,5 +1,4 @@
 import unittest
-from db_connect import AsyncDatabaseConnect
 from db_handler_async import *
 from db_classes import *
 from faker import Faker as fk
@@ -7,8 +6,6 @@ from db_classes import Base
 from werkzeug.security import check_password_hash
 from sqlalchemy import desc, func, select, text
 import logging
-from sqlalchemy.exc import SQLAlchemyError
-import asyncio
 #python -m unittest -v test_async.py
 
 class CleanDatabase():
@@ -23,96 +20,124 @@ class CleanDatabase():
         Base.metadata.drop_all(self.engine)
         Base.metadata.create_all(self.engine)
 
-class Setup():
-    def __init__(self):
-        self.fake = fk()
+class TestAsyncDatabaseHandler(unittest.IsolatedAsyncioTestCase):
 
-    async def initialize(self):
-        self.db_connect = await AsyncDatabaseConnect.connect_from_config()
-        self.engine = self.db_connect.engine
-        self.session = AsyncSession(self.engine)
-        self.db_h = AsyncDatabaseHandler(self.session)
-        self.user_h = AsyncUserHandler(self.session)
-        self.admin_user_h = AsyncAdminUserHandler(self.session)
-        self.category_h = AsyncCategoryHandler(self.session)
-        self.product_h = AsyncProductHandler(self.session)
-        self.transaction_h = AsyncTransactionHandler(self.session)
+    async def test_multiple_sessions(self):
+        fake = fk()
 
-    def get_new_session(self):
-        return self.db_connect.get_new_session()
-
-
-class TestPopulateDatabase(unittest.IsolatedAsyncioTestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.loop = asyncio.get_event_loop()
-        cls.loop.run_until_complete(cls.asyncSetUpClass())
-
-    @classmethod
-    async def asyncSetUpClass(cls):
-        cls.setup = Setup()
-        await cls.setup.initialize()
-        cls.session = AsyncSession(cls.setup.engine)
-        await CleanDatabase(cls.session).clean()
-
-    async def asyncSetUp(self):
-        self.session = self.__class__.session
-
-        self.setup.db_h.session = self.session
-        self.setup.user_h.session = self.session
-        self.setup.admin_user_h.session = self.session
-        self.setup.category_h.session = self.session
-        self.setup.product_h.session = self.session
-        self.setup.transaction_h.session = self.session
-
-        await self.session.flush() 
-
-    async def asyncTearDown(self):
-        await self.session.close()
-        await self.setup.engine.dispose()
-
-    async def test_invalid_email(self):
-        async with self.setup.get_new_session() as session:
-            self.setup.user_h.session = session
+        async with AsyncDatabaseHandler("User") as db_h:
             try:
-                user = await self.setup.user_h.create_user(
-                    username="test_invalid_email",
-                    password=self.setup.fake.password(),
-                    email="invalidemail.com"
+                fakepassword = fake.password()
+                user = await db_h.create(
+                    username="test_multiple_sessions1",
+                    password=fakepassword,
+                    email=fake.email()
                 )
-            except Exception:
-                pass
-            queried_log = select(Log).where(Log.kwargs.contains({"test_invalid_email"}))
-            result = await session.execute(queried_log)
-            queried_log = result.scalars().first()
-            if queried_log is not None:
-                self.assertEqual(queried_log.status, "FAIL")
-            else:
-                self.fail("No log entry found")
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create user")
+        
+        async with AsyncDatabaseHandler("User") as db_h:
+            try:
+                fakepassword = fake.password()
+                user = await db_h.create(
+                    username="test_multiple_sessions2",
+                    password=fakepassword,
+                    email=fake.email()
+                )
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create user")
+        
+        async with AsyncDatabaseHandler("User") as db_h:
+            queried_user1 = await db_h.get_by(User, username="test_multiple_sessions1")
+            queried_user2 = await db_h.get_by(User, username="test_multiple_sessions2")
+            
+        self.assertIsNotNone(queried_user1)
+        self.assertIsNotNone(queried_user2)
 
     async def test_create_user(self):
-        async with self.setup.get_new_session() as session:
-            self.setup.user_h.session = session
-            fakepassword = self.setup.fake.password()
-            user = await self.setup.user_h.create_user(
-                username="test_create_user",
-                password=fakepassword,
-                email=self.setup.fake.email()
-            )
-            queried_user = await self.setup.db_h.get_by(User, username="test_create_user")
+        fake = fk()
+        async with AsyncDatabaseHandler("User") as db_h:
+            try:
+                fakepassword = fake.password()
+                user = await db_h.create(
+                    username="test_create_user",
+                    password=fakepassword,
+                    email=fake.email()
+                )
+                queried_user = await db_h.get_by(User, username="test_create_user")
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create user")
+        if queried_user is not None:
             self.assertTrue(check_password_hash(queried_user.password, fakepassword))
+    
+    async def test_create_many_users(self):
+        fake = fk()
+        async with AsyncDatabaseHandler("User") as db_h:
+            try:
+                for _ in range(10):
+                    fakepassword = fake.password()
+                    user = await db_h.create(
+                        username=fake.user_name(),
+                        password=fakepassword,
+                        email=fake.email()
+                    )
+                queried_users = await db_h.get_all(User)
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create users")
+        if queried_users is not None:
+            self.assertGreaterEqual(len(queried_users), 10)
 
     async def test_create_admin_user(self):
-        async with self.setup.get_new_session() as session:
-            self.setup.admin_user_h.session = session
-            fakepassword = self.setup.fake.password()
-            user = await self.setup.admin_user_h.create_admin_user(
-                username="test_create_admin_user",
-                password=fakepassword,
-                email=self.setup.fake.email()
-            )
-            queried_user = await self.setup.db_h.get_by(User, username="test_create_admin_user")
+        fake = fk()
+        async with AsyncDatabaseHandler("AdminUser") as db_h:
+            try:
+                fakepassword = fake.password()
+                user = await db_h.create(
+                    username="test_create_admin_user",
+                    password=fakepassword,
+                    email=fake.email(),
+                    admin_status="regular"
+                )
+                queried_user = await db_h.get_by(AdminUser, username="test_create_admin_user")
+            except Exception as e:
+                logging.error(e)
+                self.fail("Failed to create admin user")
+        if queried_user is not None:
             self.assertTrue(check_password_hash(queried_user.password, fakepassword))
+            self.assertEqual(queried_user.admin_status, "regular")
+
+    async def test_invalid_email(self):
+        fake = fk()
+        try:
+            async with AsyncDatabaseHandler("User") as db_h:
+                fakepassword = fake.password()
+                user = await db_h.create(
+                    username="test_invalid_email",
+                    password=fakepassword,
+                    email="invalidemail.com"
+                )
+        except Exception:
+            pass
+
+        async with AsyncDatabaseHandler("Log") as db_h:
+            queried_log = await db_h.get_by_contains(Log, kwargs="test_invalid_email")
+
+        if queried_log is not None:
+            self.assertEqual(queried_log.status, "FAIL")
+        else:
+            self.fail("No log entry found")
+
+    async def test_clean_database(self):
+       async with AsyncDatabaseHandler("User") as db_h:
+           cleaner = CleanDatabase(db_h.session)
+           await cleaner.clean()
+           result = await db_h.session.execute(select(User))
+           self.assertEqual(result.scalars().all(), [])
+           # No need to close the session manually, it's done automatically
 
 class CustomTestResult(unittest.TextTestResult):
     def printErrors(self):
@@ -124,5 +149,17 @@ class CustomTestResult(unittest.TextTestResult):
 class CustomTestRunner(unittest.TextTestRunner):
     resultclass = CustomTestResult
 
+def suite(): # make sure we run clean_database first
+    suite = unittest.TestSuite()
+    suite.addTest(TestAsyncDatabaseHandler('test_clean_database'))
+
+    all_tests = unittest.defaultTestLoader.getTestCaseNames(TestAsyncDatabaseHandler)
+    for test_name in all_tests:
+        if test_name != 'test_clean_database':
+            suite.addTest(TestAsyncDatabaseHandler(test_name))
+
+    return suite
+
 if __name__ == '__main__':
-    unittest.main(testRunner=CustomTestRunner())
+    runner = unittest.TextTestRunner()
+    runner.run(suite())
