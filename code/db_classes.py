@@ -71,7 +71,7 @@ class Product(BaseModel):
     
     @validates('quantity')
     def validate_quantity(self, key, quantity):
-        if quantity <= 0:
+        if quantity < 0:
             raise ValueError("Quantity must be 0 or more")
         return quantity
     
