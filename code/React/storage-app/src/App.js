@@ -22,19 +22,20 @@ const App = () => {
           </a>
         </div>
       </nav>
-      <h1>Users</h1>
-      <ul className="list-unstyled">
+      <h1 className="text-center">Users</h1>
+    <ul className="list-unstyled">
         {Users.map((user) => (
-          <li key={user.id} className="mb-3">
-            <div className="card shadow">
-              <div className="card-body">
-                <h5 className="card-title">{user.username}</h5>
-                <p className="card-text">{user.email}</p>
-              </div>
-            </div>
-          </li>
+            <li key={user.id} className="mb-3">
+                <div className="card shadow p-3 m-3">
+                    <div className="card-body">
+                        <h5 className="card-title">{user.username}</h5>
+                        <p className="card-text">{user.email}</p>
+                        <p className="card-text">ID: {user.id}</p>
+                    </div>
+                </div>
+            </li>
         ))}
-      </ul>
+    </ul>
     </div>
   );
 
