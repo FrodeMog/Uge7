@@ -54,7 +54,7 @@ async def create_admin_user(admin_user: AdminUserBase):
     return admin_user
 
 # User Getters
-@app.get("/get_user/{user_id}")
+@app.get("/get_user/{user_id}/")
 async def get_user(user_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -63,7 +63,7 @@ async def get_user(user_id: int):
             raise HTTPException(status_code=400, detail=f"Failed to get user: {e}")
     return user
 
-@app.get("/get_user_by_username/{username}")
+@app.get("/get_user_by_username/{username}/")
 async def get_user_by_username(username: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -97,7 +97,7 @@ async def create_category(category: CategoryBase):
     return category
 
 # Category Getters
-@app.get("/get_category/{category_id}")
+@app.get("/get_category/{category_id}/")
 async def get_category(category_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -106,7 +106,7 @@ async def get_category(category_id: int):
             raise HTTPException(status_code=400, detail=f"Failed to get category: {e}")
     return category
 
-@app.get("/get_category_by_name/{category_name}")
+@app.get("/get_category_by_name/{category_name}/")
 async def get_category_by_name(category_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -115,7 +115,7 @@ async def get_category_by_name(category_name: str):
             raise HTTPException(status_code=400, detail=f"Failed to get category: {e}")
     return category
 
-@app.get("/get_subcategories/{category_name}")
+@app.get("/get_subcategories/{category_name}/")
 async def get_subcategories(category_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -154,7 +154,7 @@ async def create_product(product: ProductBase):
     return product
 
 # Product Getters
-@app.get("/get_product/{product_id}")
+@app.get("/get_product/{product_id}/")
 async def get_product(product_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -163,7 +163,7 @@ async def get_product(product_id: int):
             raise HTTPException(status_code=400, detail=f"Failed to get product: {e}")
     return product
 
-@app.get("/get_product_by_name/{product_name}")
+@app.get("/get_product_by_name/{product_name}/")
 async def get_product_by_name(product_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -172,7 +172,7 @@ async def get_product_by_name(product_name: str):
             raise HTTPException(status_code=400, detail=f"Failed to get product: {e}")
     return product
 
-@app.get("/get_products_by_category/{category_name}")
+@app.get("/get_products_by_category/{category_name}/")
 async def get_products_by_category(category_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -189,7 +189,7 @@ async def get_products_in_category_and_subcategories(db_h, category_id):
         products += await get_products_in_category_and_subcategories(db_h, subcategory.id)
     return products
 
-@app.get("/get_products_by_category_with_subcategories/{category_name}")
+@app.get("/get_products_by_category_with_subcategories/{category_name}/")
 async def get_products_by_category_with_subcategories(category_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -199,7 +199,7 @@ async def get_products_by_category_with_subcategories(category_name: str):
             raise HTTPException(status_code=400, detail=f"Failed to get products: {e}")
     return products
 
-@app.get("/get_products_with_quantity_less_than/{quantity}")
+@app.get("/get_products_with_quantity_less_than/{quantity}/")
 async def get_products_with_quantity_less_than(quantity: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -234,7 +234,7 @@ async def create_transaction(transaction: TransactionBase):
     return transaction
 
 # Transaction Getters
-@app.get("/get_transaction/{transaction_id}")
+@app.get("/get_transaction/{transaction_id}/")
 async def get_transaction(transaction_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -243,7 +243,7 @@ async def get_transaction(transaction_id: int):
             raise HTTPException(status_code=400, detail=f"Failed to get transaction: {e}")
     return transaction
 
-@app.get("/get_transactions_by_user_id/{user_id}")
+@app.get("/get_transactions_by_user_id/{user_id}/")
 async def get_transactions_by_user(user_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -252,7 +252,7 @@ async def get_transactions_by_user(user_id: int):
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
     return transactions
 
-@app.get("/get_transactions_by_user_name/{user_name}")
+@app.get("/get_transactions_by_user_name/{user_name}/")
 async def get_transactions_by_user(user_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -262,7 +262,7 @@ async def get_transactions_by_user(user_name: str):
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
     return transactions
 
-@app.get("/get_transactions_by_product_id/{product_id}")
+@app.get("/get_transactions_by_product_id/{product_id}/")
 async def get_transactions_by_product(product_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -271,7 +271,7 @@ async def get_transactions_by_product(product_id: int):
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
     return transactions
 
-@app.get("/get_transactions_by_product_name/{product_name}")
+@app.get("/get_transactions_by_product_name/{product_name}/")
 async def get_transactions_by_product(product_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
@@ -281,7 +281,7 @@ async def get_transactions_by_product(product_name: str):
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
     return transactions
 
-@app.get("/get_transactions_by_transaction_type/{transaction_type}")
+@app.get("/get_transactions_by_transaction_type/{transaction_type}/")
 async def get_transactions_by_transaction_type(transaction_type: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
