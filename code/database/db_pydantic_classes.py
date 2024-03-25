@@ -17,3 +17,13 @@ class AdminUserBase(BaseModel):
     password: str
     email: str
     admin_status: Optional[str] = None
+
+class ProductBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    category_id: Optional[int] = None
+    category_name: Optional[str] = None
+    purchase_price: float
+    restock_price: float
+    currency: str
+    quantity: int

@@ -1,13 +1,13 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-
 import sys
 sys.path.append("database")
 from database.db_handler_async import AsyncDatabaseHandler
 from database.db_classes import *
 from database.db_pydantic_classes import *
-
 import uvicorn
+#uvicorn main:app --reload
+#http://localhost:8000/docs
 
 app = FastAPI()
 
@@ -63,6 +63,24 @@ async def create_category(category: CategoryBase):
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create category: {e}")
     return category
+
+@app.post("/create_product/")
+async def create_product(product: ProductBase):
+    async with AsyncDatabaseHandler("Product") as db_h:
+        try:
+            product = await db_h.create(
+                name=product.name,
+                description=product.description,
+                category_id=product.category_id,
+                category_name=product.category_name,
+                purchase_price=product.purchase_price,
+                restock_price=product.restock_price,
+                currency=product.currency,
+                quantity=product.quantity
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to create product: {e}")
+    return product
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
