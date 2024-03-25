@@ -61,7 +61,7 @@ class Validator:
         if transaction_type not in ALLOWED_TRANSACTION_TYPES:
             raise ValueError("Invalid transaction type")
         
-        currency = data_dict.get("currency").lower()
+        currency = data_dict.get("currency")
         if currency not in ALLOWED_CURRENCIES:
             raise ValueError("Invalid currency")
 
@@ -157,6 +157,7 @@ class Service:
     
     @log_to_db
     async def create_transaction(self, product_id, user_id, quantity, transaction_type, currency):
+        currency = currency.lower()
         data_dict = {
             "product_id": product_id,
             "user_id": user_id,
