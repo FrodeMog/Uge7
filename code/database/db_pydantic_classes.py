@@ -27,3 +27,10 @@ class ProductBase(BaseModel):
     restock_price: float
     currency: str
     quantity: int
+
+class TransactionBase(BaseModel):
+    product_id: int
+    user_id: int
+    currency: str
+    quantity: int
+    transaction_type: str

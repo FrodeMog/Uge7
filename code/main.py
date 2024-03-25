@@ -82,5 +82,20 @@ async def create_product(product: ProductBase):
             raise HTTPException(status_code=400, detail=f"Failed to create product: {e}")
     return product
 
+@app.post("/create_transaction/")
+async def create_transaction(transaction: TransactionBase):
+    async with AsyncDatabaseHandler("Transaction") as db_h:
+        try:
+            transaction = await db_h.create(
+                product_id=transaction.product_id,
+                user_id=transaction.user_id,
+                currency=transaction.currency,
+                quantity=transaction.quantity,
+                transaction_type=transaction.transaction_type
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to create transaction: {e}")
+    return transaction
+
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
