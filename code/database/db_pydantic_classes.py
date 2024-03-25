@@ -12,11 +12,27 @@ class UserBase(BaseModel):
     password: str
     email: str
 
+# Remove password from response
+class UserResponse(BaseModel):
+    type: str
+    username: str
+    email: str
+    id: int
+    uuid: str
+
 class AdminUserBase(BaseModel):
     username: str
     password: str
     email: str
     admin_status: Optional[str] = None
+
+class AdminUserResponse(BaseModel):
+    type: str
+    username: str
+    email: str
+    id: int
+    uuid: str
+    admin_status: str
 
 class ProductBase(BaseModel):
     name: str

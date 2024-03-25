@@ -26,7 +26,8 @@ app.add_middleware(
 )
 
 # User Creator
-@app.post("/create_user/")
+# UserResponse model removes password from response
+@app.post("/create_user/", response_model=UserResponse) 
 async def create_user(user: UserBase):
     async with AsyncDatabaseHandler("User") as db_h:
         try:
@@ -37,9 +38,11 @@ async def create_user(user: UserBase):
             )
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create user: {e}")
-    return user
+    user_response = UserResponse(**user.__dict__)
+    return user_response
 
-@app.post("/create_admin_user/")
+# AdminUserResponse model removes password from response
+@app.post("/create_admin_user/", response_model=AdminUserResponse) 
 async def create_admin_user(admin_user: AdminUserBase):
     async with AsyncDatabaseHandler("AdminUser") as db_h:
         try:
@@ -51,35 +54,65 @@ async def create_admin_user(admin_user: AdminUserBase):
             )
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create admin user: {e}")
-    return admin_user
+    admin_user_response = AdminUserResponse(**admin_user.__dict__)
+    return admin_user_response
 
 # User Getters
-@app.get("/get_user/{user_id}/")
+@app.get("/get_user/{user_id}/", response_model=UserResponse)
 async def get_user(user_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
             user = await db_h.get_by(User, id=user_id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get user: {e}")
-    return user
+        
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user_response = UserResponse(**user.__dict__)
+    return user_response
 
-@app.get("/get_user_by_username/{username}/")
+@app.get("/get_user_by_username/{username}/", response_model=UserResponse)
 async def get_user_by_username(username: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             user = await db_h.get_by(User, username=username)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get user: {e}")
-    return user
+        
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user_response = UserResponse(**user.__dict__)
+    return user_response
 
-@app.get("/get_users/")
+@app.get("/get_users/", response_model=List[UserResponse])
 async def get_users():
     async with AsyncDatabaseHandler() as db_h:
         try:
             users = await db_h.get_all(User)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get users: {e}")
-    return users
+    
+    if users is None:
+        raise HTTPException(status_code=404, detail="No users found")
+
+    user_responses = [UserResponse(**user.__dict__) for user in users]
+    return user_responses
+
+@app.get("/get_admin_users/", response_model=List[AdminUserResponse])
+async def get_admin_users():
+    async with AsyncDatabaseHandler() as db_h:
+        try:
+            admin_users = await db_h.get_all(AdminUser)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to get admin users: {e}")
+        
+    if admin_users is None:
+        raise HTTPException(status_code=404, detail="No users found")
+    
+    admin_user_responses = [AdminUserResponse(**admin_user.__dict__) for admin_user in admin_users]
+    return admin_user_responses
 
 # Category Creator
 @app.post("/create_category/")
@@ -104,6 +137,10 @@ async def get_category(category_id: int):
             category = await db_h.get_by(Category, id=category_id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get category: {e}")
+        
+    if category is None:
+        raise HTTPException(status_code=404, detail="Category not found")
+
     return category
 
 @app.get("/get_category_by_name/{category_name}/")
@@ -113,6 +150,10 @@ async def get_category_by_name(category_name: str):
             category = await db_h.get_by(Category, name=category_name)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get category: {e}")
+        
+    if category is None:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
     return category
 
 @app.get("/get_subcategories/{category_name}/")
@@ -123,6 +164,10 @@ async def get_subcategories(category_name: str):
             subcategories = await db_h.get_all_by(Category, parent_id=category.id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get subcategories: {e}")
+        
+    if subcategories is None:
+        raise HTTPException(status_code=404, detail="No subcategories found")            
+
     return subcategories
 
 @app.get("/get_categories/")
@@ -132,6 +177,10 @@ async def get_categories():
             categories = await db_h.get_all(Category)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get categories: {e}")
+        
+    if categories is None:
+        raise HTTPException(status_code=404, detail="No categories found")
+
     return categories
 
 # Product Creator
@@ -161,6 +210,10 @@ async def get_product(product_id: int):
             product = await db_h.get_by(Product, id=product_id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get product: {e}")
+        
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+
     return product
 
 @app.get("/get_product_by_name/{product_name}/")
@@ -170,6 +223,10 @@ async def get_product_by_name(product_name: str):
             product = await db_h.get_by(Product, name=product_name)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get product: {e}")
+        
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+
     return product
 
 @app.get("/get_products_by_category/{category_name}/")
@@ -180,6 +237,10 @@ async def get_products_by_category(category_name: str):
             products = await db_h.get_all_by(Product, category_id=category.id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get products: {e}")
+        
+    if products is None:
+        raise HTTPException(status_code=404, detail="No products found")
+
     return products
 
 async def get_products_in_category_and_subcategories(db_h, category_id):
@@ -197,6 +258,10 @@ async def get_products_by_category_with_subcategories(category_name: str):
             products = await get_products_in_category_and_subcategories(db_h, category.id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get products: {e}")
+        
+    if products is None:
+        raise HTTPException(status_code=404, detail="No products found")
+
     return products
 
 @app.get("/get_products_with_quantity_less_than/{quantity}/")
@@ -206,6 +271,10 @@ async def get_products_with_quantity_less_than(quantity: int):
             products = await db_h.get_all_with_condition(Product, Product.quantity < quantity)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get products: {e}")
+        
+    if products is None:
+        raise HTTPException(status_code=404, detail="No products found")
+    
     return products
 
 @app.get("/get_products/")
@@ -215,6 +284,10 @@ async def get_products():
             products = await db_h.get_all(Product)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get products: {e}")
+        
+    if products is None:
+        raise HTTPException(status_code=404, detail="No products found")
+
     return products
 
 # Transaction Creator
@@ -241,6 +314,10 @@ async def get_transaction(transaction_id: int):
             transaction = await db_h.get_by(Transaction, id=transaction_id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transaction: {e}")
+        
+    if transaction is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
     return transaction
 
 @app.get("/get_transactions_by_user_id/{user_id}/")
@@ -250,6 +327,10 @@ async def get_transactions_by_user(user_id: int):
             transactions = await db_h.get_all_by(Transaction, user_id=user_id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
+        
+    if transactions is None:
+        raise HTTPException(status_code=404, detail="No transactions found")
+
     return transactions
 
 @app.get("/get_transactions_by_user_name/{user_name}/")
@@ -260,6 +341,10 @@ async def get_transactions_by_user(user_name: str):
             transactions = await db_h.get_all_by(Transaction, user_id=user.id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
+        
+    if transactions is None:
+        raise HTTPException(status_code=404, detail="No transactions found")
+
     return transactions
 
 @app.get("/get_transactions_by_product_id/{product_id}/")
@@ -269,6 +354,10 @@ async def get_transactions_by_product(product_id: int):
             transactions = await db_h.get_all_by(Transaction, product_id=product_id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
+        
+    if transactions is None:
+        raise HTTPException(status_code=404, detail="No transactions found")
+    
     return transactions
 
 @app.get("/get_transactions_by_product_name/{product_name}/")
@@ -279,6 +368,10 @@ async def get_transactions_by_product(product_name: str):
             transactions = await db_h.get_all_by(Transaction, product_id=product.id)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
+        
+    if transactions is None:
+        raise HTTPException(status_code=404, detail="No transactions found")
+
     return transactions
 
 @app.get("/get_transactions_by_transaction_type/{transaction_type}/")
@@ -288,6 +381,10 @@ async def get_transactions_by_transaction_type(transaction_type: str):
             transactions = await db_h.get_all_by(Transaction, transaction_type=transaction_type)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
+        
+    if transactions is None:
+        raise HTTPException(status_code=404, detail="No transactions found")
+
     return transactions
 
 @app.get("/get_transactions/")
@@ -297,6 +394,10 @@ async def get_transactions():
             transactions = await db_h.get_all(Transaction)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
+        
+    if transactions is None:
+        raise HTTPException(status_code=404, detail="No transactions found")
+
     return transactions
 
 if __name__ == "__main__":
