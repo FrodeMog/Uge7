@@ -288,3 +288,7 @@ class AsyncDatabaseHandler():
     async def get_all_by(self, model, **filters):
         result = await self.session.execute(select(model).filter_by(**filters))
         return result.scalars().all()
+    
+    async def get_all_with_condition(self, model, condition):
+        result = await self.session.execute(select(model).filter(condition))
+        return result.scalars().all()
