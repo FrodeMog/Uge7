@@ -6,7 +6,11 @@ from db_classes import Base
 from werkzeug.security import check_password_hash
 from sqlalchemy import desc, func, select, text
 import logging
+import os
 #python -m unittest -v test_async.py
+
+logging.basicConfig(level=logging.ERROR)
+os.environ['PYTHONASYNCIODEBUG'] = '1'
 
 class CleanDatabase():
     def __init__(self, session):
@@ -118,7 +122,7 @@ class TestAsyncDatabaseHandler(unittest.IsolatedAsyncioTestCase):
                 logging.error(e)
                 self.fail("Failed to create user")
         
-        async with AsyncDatabaseHandler("User") as db_h:
+        async with AsyncDatabaseHandler() as db_h:
             try:
                 queried_user1 = await db_h.get_by(User, username="test_multiple_sessions1")
                 queried_user2 = await db_h.get_by(User, username="test_multiple_sessions2")
