@@ -27,24 +27,6 @@ class Validator:
             raise ValueError("Invalid admin status")
         
     @staticmethod
-    async def validate_category(data_dict, db_handler):
-        parent_name = data_dict.get("parent_name")
-        parent_id = data_dict.get("parent_id")
-
-        if parent_name is not None:
-            parent = await db_handler.get_by(Category, name=parent_name)
-            if parent is None:
-                parent = Category(name=parent_name)
-                await db_handler.add(parent)
-        elif parent_id is not None:
-            parent = await db_handler.get_by(Category, id=parent_id)
-            if parent is None:
-                raise ValueError(f"No category found with ID {parent_id}")
-        else:
-            parent = None
-        return parent
-        
-    @staticmethod
     async def validate_product(data_dict, db_handler):
         category_name = data_dict.get("category_name")
         category_id = data_dict.get("category_id")
@@ -117,13 +99,18 @@ class Service:
             unknown_category = Category(name="Unknown", description="Unknown category. Reference for products with no category assigned.")
             await self.db_handler.add(unknown_category)
 
-        data_dict = {
-            "name": name,
-            "description": description,
-            "parent_id": parent_id,
-            "parent_name": parent_name
-        }
-        parent = await Validator.validate_category(data_dict, self.db_handler)
+        if parent_name is not None:
+            parent = await self.db_handler.get_by(Category, name=parent_name)
+            if parent is None:
+                parent = Category(name=parent_name)
+                await self.db_handler.add(parent)
+                await self.db_handler.commit()
+        elif parent_id is not None:
+            parent = await self.db_handler.get_by(Category, id=parent_id)
+            if parent is None:
+                raise ValueError(f"No category found with ID {parent_id}")
+        else:
+            parent = None
 
         category = Category(
             name=name,
