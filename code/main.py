@@ -14,12 +14,15 @@ import uvicorn
 app = FastAPI()
 
 origins = [
-    "http://localhost:8080",
+    "http://localhost:3000",  # React's default port
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # User Creator

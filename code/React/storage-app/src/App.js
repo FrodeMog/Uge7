@@ -1,25 +1,57 @@
-import logo from './logo.svg';
-import './App.css';
+import React, {useState, useEffect} from 'react';
+import api from './Api';
 
-function App() {
+const App = () => {
+  const [Users, setUsers] = useState([]);
+  const [formdata, setFormdata] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+
+  const fetchUsers = async () => {
+    const response = await api.get('/get_users/');
+    setUsers(response.data);
+  }
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleInputChange = (event) => {
+    setFormdata({
+      ...formdata,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    await api.get('/get_users/', formdata);
+    fetchUsers();
+    setFormdata({
+      name: '',
+      email: '',
+      password: ''
+    });
+  };
+
+  //simple list of all users
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Users</h1>
+      <ul>
+        {Users.map((user) => (
+          <li key={user.id}>
+            <p>{user.username}</p>
+            <p>{user.email}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
+
+
 }
 
 export default App;
