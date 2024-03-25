@@ -1,8 +1,11 @@
 import unittest
-from db_handler_async import *
-from db_classes import *
+
+import sys
+sys.path.append("database")
+from database.db_handler_async import AsyncDatabaseHandler
+from database.db_classes import *
+
 from faker import Faker as fk
-from db_classes import Base
 from werkzeug.security import check_password_hash
 from sqlalchemy import desc, func, select, text
 import logging

@@ -5,9 +5,16 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import re
+import os
 import json
 
-with open('../data/currencies.json', 'r') as f:
+# Get the directory of the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the path to the file
+file_path = os.path.join(script_dir, '..', 'data', 'currencies.json')
+
+with open(file_path, 'r') as f:
     currencies_data = json.load(f)
 
 ALLOWED_CURRENCIES = currencies_data['allowed_currencies']

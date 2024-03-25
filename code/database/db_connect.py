@@ -1,9 +1,10 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from contextlib import asynccontextmanager
 import json
 import asyncio
+import os
 
 class SingletonDatabaseConnect:
     instance = None
@@ -27,11 +28,17 @@ class SingletonDatabaseConnect:
 
     @classmethod
     def connect_from_config(cls):
+        # Get the directory of the current script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
 
-        with open('../data/secrets.json', 'r') as f:
+        # Construct the path to the file
+        file_path_secrets = os.path.join(script_dir, '..', 'data', 'secrets.json')
+        file_path_config = os.path.join(script_dir, '..', 'data', 'config_async.json')
+
+        with open(file_path_secrets, 'r') as f:
             secrets = json.load(f)
 
-        with open('../data/config.json', 'r') as f:
+        with open(file_path_config, 'r') as f:
             config = json.load(f)
 
         adapter = config['adapter'] 
@@ -69,10 +76,17 @@ class AsyncDatabaseConnect:
             
     @staticmethod
     async def connect_from_config():
-        with open('../data/secrets.json', 'r') as f:
+        # Get the directory of the current script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Construct the path to the file
+        file_path_secrets = os.path.join(script_dir, '..', 'data', 'secrets.json')
+        file_path_config = os.path.join(script_dir, '..', 'data', 'config_async.json')
+
+        with open(file_path_secrets, 'r') as f:
             secrets = json.load(f)
 
-        with open('../data/config_async.json', 'r') as f:
+        with open(file_path_config, 'r') as f:
             config = json.load(f)
 
         adapter = config['adapter'] 
