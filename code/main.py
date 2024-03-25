@@ -8,6 +8,7 @@ from database.db_pydantic_classes import *
 from typing import List, Annotated
 import uvicorn
 #uvicorn main:app --reload
+#npx create-react-app storage-app
 #http://localhost:8000/docs
 
 app = FastAPI()
