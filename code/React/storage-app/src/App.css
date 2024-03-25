@@ -36,3 +36,40 @@
     transform: rotate(360deg);
   }
 }
+
+.card {
+  transition: transform 0.1s ease-in-out;
+}
+
+.card:hover {
+  background-color: #f0f0f0;
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
+.card-body {
+  transition: height 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.card-body-enter {
+  height: 0;
+}
+
+.card-body-enter-active {
+  height: 100px;
+}
+
+.card-body-exit {
+  height: 100px; 
+}
+
+.card-body-exit-active {
+  height: 0;
+}
+
+.card-body.open {
+  max-height: 500px;
+}
