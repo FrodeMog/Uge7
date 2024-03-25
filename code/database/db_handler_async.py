@@ -6,6 +6,13 @@ from sqlalchemy import select
 from db_connect import AsyncDatabaseConnect
 import inspect
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(script_dir, '..', 'data', 'currencies.json')
+with open(file_path, 'r') as f:
+    currencies_data = json.load(f)
+
+CURRENCY_CONVERSION_RATES = dict(currencies_data['conversion_currencies'])
+
 class Validator:
     @staticmethod
     async def validate_user(data_dict, db_handler):
@@ -171,10 +178,15 @@ class Service:
             product.quantity += quantity
             price = -product.restock_price * quantity
 
+        # Convert price to the target currency
+        conversion_rate_product = CURRENCY_CONVERSION_RATES[product.currency]
+        conversion_rate_transaction = CURRENCY_CONVERSION_RATES[currency]
+        price_in_target_currency = price * conversion_rate_transaction / conversion_rate_product
+
         transaction = Transaction(
             product_id=product_id,
             user_id=user_id,
-            price=price,
+            price=price_in_target_currency,
             quantity=quantity,
             transaction_type=transaction_type,
             currency=currency
