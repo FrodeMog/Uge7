@@ -3,11 +3,6 @@ import api from './Api';
 
 const App = () => {
   const [Users, setUsers] = useState([]);
-  const [formdata, setFormdata] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
 
   const fetchUsers = async () => {
     const response = await api.get('/get_users/');
@@ -18,33 +13,25 @@ const App = () => {
     fetchUsers();
   }, []);
 
-  const handleInputChange = (event) => {
-    setFormdata({
-      ...formdata,
-      [event.target.name]: event.target.value,
-    });
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    await api.get('/get_users/', formdata);
-    fetchUsers();
-    setFormdata({
-      name: '',
-      email: '',
-      password: ''
-    });
-  };
-
-  //simple list of all users
   return (
     <div>
+      <nav className="navbar navbar-dark bg-primary">
+        <div className="container-fluid">
+          <a className="navbar-brand" href="#">
+            Storage App
+          </a>
+        </div>
+      </nav>
       <h1>Users</h1>
-      <ul>
+      <ul className="list-unstyled">
         {Users.map((user) => (
-          <li key={user.id}>
-            <p>{user.username}</p>
-            <p>{user.email}</p>
+          <li key={user.id} className="mb-3">
+            <div className="card shadow">
+              <div className="card-body">
+                <h5 className="card-title">{user.username}</h5>
+                <p className="card-text">{user.email}</p>
+              </div>
+            </div>
           </li>
         ))}
       </ul>
