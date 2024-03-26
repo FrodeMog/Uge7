@@ -7,6 +7,7 @@ from database.db_classes import *
 from database.db_pydantic_classes import *
 from typing import List, Annotated
 import uvicorn
+from werkzeug.security import check_password_hash
 #uvicorn main:app --reload
 #npx create-react-app storage-app
 #http://localhost:8000/docs
@@ -24,6 +25,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.post("/login_user/", response_model=LoginResponse)
+async def login_user(user: LoginBase):
+    async with AsyncDatabaseHandler() as db_h:
+        try:
+            user_db = await db_h.get_by(User, username=user.username)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to login user: {e}")
+        
+    if user_db is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not check_password_hash(user_db.password, user.password):
+        raise HTTPException(status_code=401, detail="Invalid password")
+    
+    # Create a dictionary of user_db fields, excluding SQLAlchemy-specific fields
+    user_dict = {k: v for k, v in user_db.__dict__.items() if not k.startswith('_')}
+    
+    user_response = LoginResponse(**user_dict)
+    return user_response
 
 # User Creator
 # UserResponse model removes password from response

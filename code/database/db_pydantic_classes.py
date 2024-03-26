@@ -20,6 +20,17 @@ class UserResponse(BaseModel):
     id: int
     uuid: str
 
+class LoginBase(BaseModel):
+    username: str
+    password: str
+
+class LoginResponse(BaseModel):
+    type: str
+    username: str
+    email: str
+    id: int
+    uuid: str
+
 class AdminUserBase(BaseModel):
     username: str
     password: str
