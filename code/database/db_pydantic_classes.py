@@ -48,7 +48,6 @@ class AdminUserResponse(BaseModel):
 class ProductBase(BaseModel):
     name: str
     description: Optional[str] = None
-    category_id: Optional[int] = None
     category_name: Optional[str] = None
     purchase_price: float
     restock_price: float

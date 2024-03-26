@@ -212,7 +212,6 @@ async def create_product(product: ProductBase):
             product = await db_h.create(
                 name=product.name,
                 description=product.description,
-                category_id=product.category_id,
                 category_name=product.category_name,
                 purchase_price=product.purchase_price,
                 restock_price=product.restock_price,

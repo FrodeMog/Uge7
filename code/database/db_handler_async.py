@@ -34,20 +34,31 @@ class Validator:
             raise ValueError("Invalid admin status")
         
     @staticmethod
+    async def validate_category(data_dict, db_handler):
+        name = data_dict.get("name")
+        existing_category_with_same_name = await db_handler.get_by(Category, name=name)
+        if existing_category_with_same_name is not None:
+            raise ValueError("A category with this name already exists")
+        
+    @staticmethod
     async def validate_product(data_dict, db_handler):
+
+        name = data_dict.get("name")
+        existing_product_with_same_name = await db_handler.get_by(Product, name=name)
+        if existing_product_with_same_name is not None:
+            raise ValueError("A product with this name already exists")
+
         category_name = data_dict.get("category_name")
-        category_id = data_dict.get("category_id")
+        category = None
 
         if category_name is not None:
             category = await db_handler.get_by(Category, name=category_name)
-            if category is None:
-                raise ValueError(f"No category found with name {category_name}")
-        elif category_id is not None:
-            category = await db_handler.get_by(Category, id=category_id)
-            if category is None:
-                raise ValueError(f"No category found with ID {category_id}")
-        else:
+
+        if category is None:
             category = await db_handler.get_by(Category, id=1)  # Use the default "Unknown" category
+            if category is None:
+                raise ValueError("No category found with ID 1")
+
         return category
         
     @staticmethod
@@ -106,6 +117,9 @@ class Service:
             unknown_category = Category(name="Unknown", description="Unknown category. Reference for products with no category assigned.")
             await self.db_handler.add(unknown_category)
 
+        data_dict = {"name": name, "description": description, "parent_id": parent_id, "parent_name": parent_name}
+        await Validator.validate_category(data_dict, self.db_handler)
+
         if parent_name is not None:
             parent = await self.db_handler.get_by(Category, name=parent_name)
             if parent is None:
@@ -128,7 +142,7 @@ class Service:
         return category
     
     @log_to_db
-    async def create_product(self, name, description, purchase_price, restock_price, currency, quantity, category_id=None, category_name=None):
+    async def create_product(self, name, description, purchase_price, restock_price, currency, quantity, category_name=None):
         data_dict = {
             "name": name,
             "description": description,
@@ -136,7 +150,6 @@ class Service:
             "restock_price": restock_price,
             "currency": currency,
             "quantity": quantity,
-            "category_id": category_id,
             "category_name": category_name
         }
         category = await Validator.validate_product(data_dict, self.db_handler)
