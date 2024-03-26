@@ -1,10 +1,5 @@
 Important:
-Creation date for Users
-
-Important:
-API user credential check
-Login w/e
-
+transaction component:
 
 Get users activity from transactions
 
@@ -19,3 +14,9 @@ Get report money gained from purchases
 Get Refund activity
 
 etc etc etc...
+
+
+
+Important:
+Delete
+Allow deletion of product and category (maybe user)
