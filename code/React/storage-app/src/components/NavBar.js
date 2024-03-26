@@ -30,7 +30,7 @@ const NavBar = () => {
           <button className="btn btn-primary" onClick={() => navigate('/')}>Home</button>
           <button className="btn btn-primary" onClick={() => navigate('/products')}>Products</button>
           {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/users')}>Users</button>}
-          {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/add_products')}>Add Products</button>}
+          {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/create')}>Create</button>}
           {loggedInUser ? (
           <div>
             <span className="navbar-text">

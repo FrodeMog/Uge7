@@ -5,7 +5,7 @@ import './App.css';
 //import the AuthContext
 import { AuthContext } from './contexts/auth.js';
 import Products from './components/Products.js';
-import Add_Products from './components/Add_products.js';
+import Create from './components/Create.js';
 import NavBar from './components/NavBar.js';
 import Home from './components/Home.js';
 import Users from './components/Users.js';
@@ -40,9 +40,9 @@ const App = () => {
               <Users />
             </AdminProtectedRoute>
           } />
-          <Route path="/add_products" element={
+          <Route path="/create" element={
             <AdminProtectedRoute>
-              <Add_Products />
+              <Create />
             </AdminProtectedRoute>
           } />
         </Routes>

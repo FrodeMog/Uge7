@@ -42,6 +42,7 @@ const Add_Products = () => {
     return (
     <div className="card container mt-5">
         <div className="card-body">
+            <h5 className="card-title">Add Product</h5>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label className="form-label">Name</label>
