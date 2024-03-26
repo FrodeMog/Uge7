@@ -1,5 +1,3 @@
-//npm install axios
-
 import axios from 'axios';
 
 const api = axios.create({
