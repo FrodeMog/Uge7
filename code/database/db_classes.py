@@ -42,6 +42,7 @@ class BaseModel(Base):
 
     def __repr__(self):
         return str({column.name: getattr(self, column.name) for column in self.__table__.columns if hasattr(self, column.name)})
+    
 class Log(BaseModel):
     __tablename__ = 'logs'
     
