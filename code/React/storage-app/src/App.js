@@ -25,11 +25,7 @@ const App = () => {
     <BrowserRouter>
       <NavBar />
         <Routes>
-          <Route path="/" element={
-            <UserProtectedRoute>
-              <Home />
-            </UserProtectedRoute>
-          } />
+        <Route path="/" element={<Home />} />
           <Route path="/products" element={
             <UserProtectedRoute>
               <Products />

@@ -29,16 +29,20 @@ const Products = () => {
             <table className="table">
                 <thead>
                     <tr>
+                        <th scope="col">ID</th>
                         <th scope="col">Name</th>
                         <th scope="col">Price</th>
+                        <th scope='col'>Currency</th>
                         <th scope="col">Quantity</th>
                     </tr>
                 </thead>
                 <tbody>
                     {products.map((product, index) => (
                         <tr key={index}>
+                            <td>{product.id}</td>
                             <td>{product.name}</td>
                             <td>{product.purchase_price}</td>
+                            <td>{product.currency}</td>
                             <td>{product.quantity}</td>
                         </tr>
                     ))}

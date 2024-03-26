@@ -24,13 +24,6 @@ const AuthProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('loggedInUser'));
-        if (user) {
-            setLoggedInUser(user);
-        }
-    }, []);
-
     return (
         <AuthContext.Provider value={{ username, setUsername, password, setPassword, loggedInUser, setLoggedInUser, handleContextLogin, isAdmin }}>
         {children}

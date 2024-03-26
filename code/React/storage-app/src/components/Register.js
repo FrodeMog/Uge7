@@ -27,6 +27,7 @@ const Register = () => {
 
             setToastMessage('User: '+user.username+' created successfully!');
             setShowToast(true);
+            setTimeout(() => setShowModal(false), 2000);
         } catch (error) {
             console.error('Failed to create user:', error);
             // Extract the error message from the API response
