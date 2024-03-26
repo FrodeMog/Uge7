@@ -1,0 +1,5 @@
+/* Category_sidebar.css */
+.text-left {
+    text-align: left !important;
+    justify-content: flex-start !important;
+}
