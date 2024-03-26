@@ -39,6 +39,7 @@ const Products = () => {
                 </div>
                 <div className="col-md-9">
                     <h1>Products</h1>
+                    <h4>Category: {selectedCategory ? categories.find(cat => cat.id === selectedCategory)?.name : 'All'}</h4>
                     <table className="table">
                         <thead>
                             <tr>
