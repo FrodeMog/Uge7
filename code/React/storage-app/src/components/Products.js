@@ -11,7 +11,7 @@ import { AuthContext } from '../contexts/auth.js';
 
 const Products = () => {
     // get user from context
-    const { loggedInUser } = useContext(AuthContext);
+    const { loggedInUser, isAdmin } = useContext(AuthContext);
     const [products, setProducts] = useState([]);
 
     useEffect(() => {
