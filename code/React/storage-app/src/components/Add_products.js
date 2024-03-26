@@ -4,6 +4,8 @@ Component to add products
 import React, { useState, useContext } from 'react';
 import api from '../api/api.js';
 import { AuthContext } from '../contexts/auth.js';
+import Toast from 'react-bootstrap/Toast';
+
 
 const Add_Products = () => {
     const { loggedInUser, isAdmin } = useContext(AuthContext);
@@ -16,6 +18,9 @@ const Add_Products = () => {
     const [restockPrice, setRestockPrice] = useState('');
     const [currency, setCurrency] = useState('');
     const [quantity, setQuantity] = useState('');
+
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -34,8 +39,15 @@ const Add_Products = () => {
         try {
             const response = await api.post('/create_product/', product);
             console.log(response.data);
+
+            setToastMessage('Product: '+product.name+' created successfully!');
+            setShowToast(true);
         } catch (error) {
             console.error('Failed to create product:', error);
+
+            const errorMessage = error.response?.data?.detail || 'Failed to create product.';
+            setToastMessage(errorMessage);
+            setShowToast(true);
         }
     };
 
@@ -51,10 +63,6 @@ const Add_Products = () => {
                 <div className="mb-3">
                     <label className="form-label">Description</label>
                     <input type="text" className="form-control" value={description} onChange={e => setDescription(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Category ID</label>
-                    <input type="text" className="form-control" value={categoryId} onChange={e => setCategoryId(e.target.value)} />
                 </div>
                 <div className="mb-3">
                     <label className="form-label">Category Name</label>
@@ -79,6 +87,11 @@ const Add_Products = () => {
                 <button type="submit" className="btn btn-primary">Create Product</button>
             </form>
         </div>
+        <div className="d-flex justify-content-center align-items-center mb-4" >
+                    <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide>
+                        <Toast.Body className="text-center">{toastMessage}</Toast.Body>
+                    </Toast>
+                </div>
     </div>
     );
 };
