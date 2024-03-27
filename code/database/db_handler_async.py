@@ -2,7 +2,7 @@ import db_classes
 from db_classes import *
 from db_classes import ALLOWED_CURRENCIES, ALLOWED_TRANSACTION_TYPES, ALLOWED_ADMIN_STATUSES
 from db_decorators_async import log_to_db
-from sqlalchemy import select, update
+from sqlalchemy import select, update, and_
 from db_connect import AsyncDatabaseConnect
 import inspect
 
@@ -260,7 +260,15 @@ class Service:
         )
         await self.db_handler.add(transaction)
         return transaction
-        
+
+def filter_deleted_references(model):
+    conditions = []
+    if hasattr(model, 'name'):
+        conditions.extend([model.name != 'deleted_user', model.name != 'deleted_category', model.name != 'deleted_product'])
+    if hasattr(model, 'username'):
+        conditions.append(model.username != 'deleted_user')
+    return and_(*conditions)
+
 class AsyncDatabaseHandler():
     def __init__(self, item_type=None):
         self.db_connect = None
@@ -359,27 +367,27 @@ class AsyncDatabaseHandler():
             await self.session.execute(stmt)
 
     async def get_by_contains(self, model, **filters):
-        stmt = select(model).where(*[getattr(model, k).contains(v) for k, v in filters.items()])
+        stmt = select(model).where(and_(*[getattr(model, k).contains(v) for k, v in filters.items()], filter_deleted_references(model)))
         result = await self.session.execute(stmt)
         return result.scalars().one_or_none()
 
     async def get_by_id(self, model, id):
-        result = await self.session.execute(select(model).filter(model.id == id))
+        result = await self.session.execute(select(model).where(and_(model.id == id, filter_deleted_references(model))))
         return result.scalars().first()
 
     async def get_by(self, model, **filters):
-        stmt = select(model).where(*[getattr(model, k) == v for k, v in filters.items()])
+        stmt = select(model).where(and_(*[getattr(model, k) == v for k, v in filters.items()], filter_deleted_references(model)))
         result = await self.session.execute(stmt)
         return result.scalars().first()
 
     async def get_all(self, model):
-        result = await self.session.execute(select(model))
+        result = await self.session.execute(select(model).where(filter_deleted_references(model)))
         return result.scalars().all()
 
     async def get_all_by(self, model, **filters):
-        result = await self.session.execute(select(model).filter_by(**filters))
+        result = await self.session.execute(select(model).where(and_(*[getattr(model, k) == v for k, v in filters.items()], filter_deleted_references(model))))
         return result.scalars().all()
-    
+
     async def get_all_with_condition(self, model, condition):
-        result = await self.session.execute(select(model).filter(condition))
+        result = await self.session.execute(select(model).where(and_(condition, filter_deleted_references(model))))
         return result.scalars().all()
