@@ -2,7 +2,7 @@ import db_classes
 from db_classes import *
 from db_classes import ALLOWED_CURRENCIES, ALLOWED_TRANSACTION_TYPES, ALLOWED_ADMIN_STATUSES
 from db_decorators_async import log_to_db
-from sqlalchemy import select
+from sqlalchemy import select, update
 from db_connect import AsyncDatabaseConnect
 import inspect
 
@@ -235,6 +235,7 @@ class AsyncDatabaseHandler():
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        print(f"exc_type: {exc_type}, exc_val: {exc_val}, exc_tb: {exc_tb}")
         if self.transaction is not None and self.transaction.is_active:
             if exc_type is not None:
                 await self.transaction.rollback()
@@ -283,7 +284,17 @@ class AsyncDatabaseHandler():
             delete_method = getattr(self.service, f"delete_{item_type_lower}")
             return await delete_method(instance)
         else:
-            self.session.delete(instance)
+            await self.session.delete(instance)
+
+    async def delete_by_id(self, model, id):
+        instance = await self.get_by_id(model, id)
+        if instance is not None:
+            item_type_lower = type(instance).__name__.lower()
+            if hasattr(self.service, f"delete_by_id_{item_type_lower}"):
+                delete_method = getattr(self.service, f"delete_by_id_{item_type_lower}")
+                return await delete_method(instance)
+            else:
+                await self.session.delete(instance)
 
     async def update(self, instance, **kwargs):
         item_type_lower = type(instance).__name__.lower()
@@ -291,7 +302,8 @@ class AsyncDatabaseHandler():
             update_method = getattr(self.service, f"update_{item_type_lower}")
             return await update_method(instance, **kwargs)
         else:
-            self.session.query(instance).update(kwargs)
+            stmt = update(instance.__class__).where(instance.__class__.id == instance.id).values(**kwargs)
+            await self.session.execute(stmt)
 
     async def get_by_contains(self, model, **filters):
         stmt = select(model).where(*[getattr(model, k).contains(v) for k, v in filters.items()])
