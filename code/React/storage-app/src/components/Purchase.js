@@ -23,7 +23,8 @@ const PurchaseModal = ({ product, onQuantityChange }) => {
     const handleShow = () => setShow(true);
 
     const handleChange = (e) => {
-        setTransaction({ ...transaction, [e.target.name]: e.target.value });
+        const value = e.target.name === 'quantity' ? parseInt(e.target.value, 10) : e.target.value;
+        setTransaction({ ...transaction, [e.target.name]: value });
     };
 
     const handleSubmit = async (e) => {
