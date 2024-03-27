@@ -60,7 +60,29 @@ class Validator:
                 raise ValueError("No category found with ID 1")
 
         return category
+    
+    @staticmethod
+    async def validate_update_product(product_data, db_handler, existing_product=None):
+        # If the product name hasn't changed, skip the unique name check
+        if existing_product is not None and existing_product.name == product_data.get('name'):
+            return
+
+        # Check if a product with the same name already exists
+        existing_product_with_same_name = await db_handler.get_by(Product, name=product_data.get('name'))
+        if existing_product_with_same_name is not None and existing_product_with_same_name.id != existing_product.id:
+            raise ValueError("A product with this name already exists")
         
+    @staticmethod
+    async def validate_update_category(category_data, db_handler, existing_category=None):
+        # If the category name hasn't changed, skip the unique name check
+        if existing_category is not None and existing_category.name == category_data.get('name'):
+            return
+
+        # Check if a category with the same name already exists
+        existing_category_with_same_name = await db_handler.get_by(Category, name=category_data.get('name'))
+        if existing_category_with_same_name is not None and existing_category_with_same_name.id != existing_category.id:
+            raise ValueError("A category with this name already exists")
+
     @staticmethod
     async def validate_transaction(data_dict, db_handler):
         product_id = data_dict.get("product_id")
@@ -227,7 +249,7 @@ class Service:
         category_name = kwargs.pop('category_name', None)
 
         # Validate and update the product
-        await Validator.validate_product(kwargs, self.db_handler)
+        await Validator.validate_update_product(kwargs, self.db_handler, existing_product=product)
         await self.db_handler.update(product, **kwargs)
 
         # If category_name was provided, update the product's category
@@ -243,13 +265,15 @@ class Service:
         parent_name = kwargs.pop('parent_name', None)
 
         # Validate and update the category
-        await Validator.validate_category(kwargs, self.db_handler)
+        await Validator.validate_update_category(kwargs, self.db_handler, existing_category=category)
         await self.db_handler.update(category, **kwargs)
 
         # If parent_name was provided, update the category's parent
         if parent_name is not None:
-            # Fetch the category's parent and update its name
+            # Fetch the category's parent
             parent = await self.db_handler.get_by(Category, id=category.parent_id)
+            if parent is None:
+                raise ValueError(f"No category found with ID {category.parent_id}")
             parent.name = parent_name
             await self.db_handler.commit()
     
