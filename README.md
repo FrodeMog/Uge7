@@ -1,6 +1,8 @@
 # Storage System
 
-## Installation
+# Installation
+
+## Python environment
 
 1. Create environment:
     ```
@@ -17,9 +19,9 @@
     pip install -r requirements.txt
     ```
 
-#### Create Database
+## Create Database
 
-1. Create a mysql with MySQL workbench or other ways
+1. Create a mysql database with MySQL workbench or other ways
 
 2. Create a `secrets.json` at `code/data`
 
@@ -45,7 +47,7 @@ Run
 python generate_database_data.py
 ```
 
-#### Install Front-end React requirements
+## Install Front-end React requirements
 1. Install Node.js
     [https://nodejs.org](https://nodejs.org)
 
