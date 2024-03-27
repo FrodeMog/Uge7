@@ -21,8 +21,6 @@ function DeleteModal({ id, mode }) {
                 if(isAdmin){
                     if (mode === 'product') {
                         await api.delete(`/delete_product/${id}/`);
-                    } else if (mode === 'transaction') {
-                        //await api.delete(`/delete_transaction/${id}/`);
                     } else if (mode === 'category') {
                         await api.delete(`/delete_category/${id}/`);
                     } else if (mode === 'user') {
@@ -30,12 +28,12 @@ function DeleteModal({ id, mode }) {
                     }
                 }
                 setToastMessage(`${mode.charAt(0).toUpperCase() + mode.slice(1)} deleted successfully`);
-                //setToastMessage(`Not implemented yet`);
             } else {
                 setToastMessage('You are not authorized to delete');
             }
         } catch (error) {
-            setToastMessage(`Failed to delete ${mode}: ${error}`);
+            const errorMessage = error.response?.data?.detail || 'Failed to delete';
+            setToastMessage(errorMessage);
         }
         setShowToast(true);
         handleClose();
