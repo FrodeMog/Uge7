@@ -45,7 +45,6 @@ class TestAsyncDatabaseHandler(unittest.IsolatedAsyncioTestCase):
                 product = await db_h.create(
                     name="test_create_product",
                     description="test description",
-                    category_id=1,
                     purchase_price=1.0,
                     restock_price=1.0,
                     currency="USD",
@@ -63,7 +62,6 @@ class TestAsyncDatabaseHandler(unittest.IsolatedAsyncioTestCase):
                 product = await db_h.create(
                     name="test_create_transaction",
                     description="test description",
-                    category_id=1,
                     purchase_price=1.0,
                     restock_price=1.0,
                     currency="USD",
