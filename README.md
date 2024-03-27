@@ -181,7 +181,7 @@ Full stack diagram from SQLAlchemy ORMS -> Connect -> Database Handler -> FastAP
 ![Diagram](diagrams/Project_diagram.png)
 
 ### Database Diagram
-Database diagram with relationships. Categories referes to itself because of a tree-like parent.id structure to make sub_categories
+Database diagram with relationships. Categories referes to itself for a tree-like parent.id structure to make sub_categories
 ![db_Digram](diagrams/MySQL_db.png)
 
 ## Fast API Docs
