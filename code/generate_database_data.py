@@ -44,7 +44,8 @@ class GenerateFakeData():
         #create a reference to deleted users
         async with AsyncDatabaseHandler("User") as db_h:
             try:
-                deleted_user = await db_h.create(username="deleted_user",
+                deleted_user = await db_h.create(
+                        username="deleted_user",
                         password="deleted_user",
                         email="a@a.com")
             except Exception as e:
