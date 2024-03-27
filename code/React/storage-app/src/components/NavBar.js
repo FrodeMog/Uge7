@@ -21,10 +21,12 @@ const NavBar = () => {
           <a className="navbar-brand" href="#" onClick={() => navigate('/')}>
             Storage App
           </a>
-              {loggedInUser && <button className="btn btn-primary" onClick={() => navigate('/products')}>Products</button>}
-              {loggedInUser && <button className="btn btn-primary" onClick={() => navigate('/transactions')}>Transactions</button>}
-              {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/users')}>Users</button>}
-              {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/create')}>Create</button>}
+                {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/logs')}>Logs</button>}
+                {loggedInUser && <button className="btn btn-primary" onClick={() => navigate('/products')}>Products</button>}
+                {loggedInUser && <button className="btn btn-primary" onClick={() => navigate('/transactions')}>Transactions</button>}
+                {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/categories')}>Categories</button>}
+                {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/users')}>Users</button>}
+                {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/create')}>Create</button>}
               {loggedInUser ? (
                 <div>
                     <span className="navbar-text">
