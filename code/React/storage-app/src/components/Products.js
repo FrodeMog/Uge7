@@ -4,6 +4,8 @@ import { AuthContext } from '../contexts/auth.js';
 import CategorySidebar from './Category_sidebar.js';
 import PurchaseModal from './Purchase.js';
 import RestockModal from './Restock.js';
+import DeleteModal from './Delete.js';
+import UpdateModal from './Update.js';
 
 const Products = () => {
     const { loggedInUser, isAdmin } = useContext(AuthContext);
@@ -109,7 +111,11 @@ const Products = () => {
                                 </th>
                                 <th>Purchase</th>
                                 {isAdmin && (
-                                    <th>Restock</th>
+                                    <>
+                                        <th>Restock</th>
+                                        <th>Delete</th>
+                                        <th>Update</th>
+                                    </>
                                 )}
                             </tr>
                         </thead>
@@ -126,9 +132,17 @@ const Products = () => {
                                         <PurchaseModal product={product} onQuantityChange={handlePurchaseQuantityChange} />
                                     </td>
                                     {isAdmin && (
-                                        <td>
-                                            <RestockModal product={product} onQuantityChange={handleRestockQuantityChange} />
-                                        </td>
+                                        <>
+                                            <td>
+                                                <RestockModal product={product} onQuantityChange={handleRestockQuantityChange} />
+                                            </td>
+                                            <td>
+                                                <DeleteModal mode="product" id={product.id} />
+                                            </td>
+                                            <td>
+                                                <UpdateModal mode="product" id={product.id} />
+                                            </td>
+                                        </>
                                     )}
                                 </tr>
                             ))}
