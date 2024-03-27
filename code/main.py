@@ -92,6 +92,42 @@ async def create_admin_user(admin_user: AdminUserBase):
     admin_user_response = AdminUserResponse(**admin_user.__dict__)
     return admin_user_response
 
+# User Delete
+@app.delete("/delete_user/{user_id}/")
+async def delete_user(user_id: int):
+    async with AsyncDatabaseHandler("User") as db_h:
+        try:
+            await db_h.delete(User, id=user_id)
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to delete user: {e}")
+    return {"detail": "User deleted"}
+
+# AdminUser Delete
+@app.delete("/delete_admin_user/{user_id}/")
+async def delete_admin_user(user_id: int):
+    async with AsyncDatabaseHandler("AdminUser") as db_h:
+        try:
+            await db_h.delete(AdminUser, id=user_id)
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to delete admin user: {e}")
+    return {"detail": "Admin user deleted"}
+
+# User Update
+@app.put("/update_user/{user_id}/")
+async def update_user(user_id: int, user: UserBase):
+    async with AsyncDatabaseHandler("User") as db_h:
+        try:
+            await db_h.update(User, id=user_id, **user.dict())
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to update user: {e}")
+    return {"detail": "User updated"}
+
 # User Getters
 @app.get("/get_user/{user_id}/", response_model=UserResponse)
 async def get_user(user_id: int):
@@ -173,6 +209,30 @@ async def create_category(category: CategoryBase):
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create category: {e}")
     return category
+
+# Category Delete
+@app.delete("/delete_category/{category_id}/")
+async def delete_category(category_id: int):
+    async with AsyncDatabaseHandler("Category") as db_h:
+        try:
+            await db_h.delete(Category, id=category_id)
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to delete category: {e}")
+    return {"detail": "Category deleted"}
+
+# Category Update
+@app.put("/update_category/{category_id}/")
+async def update_category(category_id: int, category: CategoryBase):
+    async with AsyncDatabaseHandler("Category") as db_h:
+        try:
+            await db_h.update(Category, id=category_id, **category.dict())
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to update category: {e}")
+    return {"detail": "Category updated"}
 
 # Category Getters
 @app.get("/get_category/{category_id}/")
@@ -257,6 +317,30 @@ async def create_product(product: ProductBase):
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create product: {e}")
     return product
+
+# Product Delete
+@app.delete("/delete_product/{product_id}/")
+async def delete_product(product_id: int):
+    async with AsyncDatabaseHandler("Product") as db_h:
+        try:
+            await db_h.delete_by_id(Product, product_id)
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to delete product: {e}")
+    return {"detail": "Product deleted"}
+
+# Product Update
+@app.put("/update_product/{product_id}/")
+async def update_product(product_id: int, product: ProductBase):
+    async with AsyncDatabaseHandler("Product") as db_h:
+        try:
+            await db_h.update(Product, id=product_id, **product.dict())
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to update product: {e}")
+    return {"detail": "Product updated"}
 
 # Product Getters
 @app.get("/get_product/{product_id}/")
@@ -380,6 +464,30 @@ async def create_transaction(transaction: TransactionBase):
             raise HTTPException(status_code=400, detail=f"Failed to create transaction: {e}")
     return transaction
 
+# Transaction Delete
+@app.delete("/delete_transaction/{transaction_id}/")
+async def delete_transaction(transaction_id: int):
+    async with AsyncDatabaseHandler("Transaction") as db_h:
+        try:
+            await db_h.delete(Transaction, id=transaction_id)
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to delete transaction: {e}")
+    return {"detail": "Transaction deleted"}
+
+# Transaction Update
+@app.put("/update_transaction/{transaction_id}/")
+async def update_transaction(transaction_id: int, transaction: TransactionBase):
+    async with AsyncDatabaseHandler("Transaction") as db_h:
+        try:
+            await db_h.update(Transaction, id=transaction_id, **transaction.dict())
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to update transaction: {e}")
+    return {"detail": "Transaction updated"}
+
 # Transaction Getters
 @app.get("/get_transaction/{transaction_id}/")
 async def get_transaction(transaction_id: int):
@@ -490,6 +598,23 @@ async def get_transactions():
         raise HTTPException(status_code=404, detail="No transactions found")
 
     return transactions
+
+
+#get logs
+@app.get("/get_logs/")
+async def get_logs():
+    async with AsyncDatabaseHandler() as db_h:
+        try:
+            logs = await db_h.get_all(Log)
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to get logs: {e}")
+        
+    if logs is None:
+        raise HTTPException(status_code=404, detail="No logs found")
+
+    return logs
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
