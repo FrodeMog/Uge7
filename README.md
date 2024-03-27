@@ -69,7 +69,7 @@ npm audit fix --force
 
 1. Launch API service at main.py location
 
-Go to
+Open 1st terminal and go to
 ```
 code/
 ```
@@ -84,7 +84,7 @@ localhost:8000/docs
 
 2. Lauch React Front-end at App location
 
-Go to
+Open 2nd terminal and go to
 ```
 code/react/storage-app 
 ```
@@ -96,6 +96,13 @@ Launch browser
 ```
 localhost:3000
 ```
+
+3. Login with the generated base users:
+
+| User Type | Username | Password |
+| --------- | -------- | -------- |
+| Admin     | `admin`  | `admin`  |
+| Normal    | `user`   | `user`   |
 
 ## Run Tests
 
@@ -143,27 +150,27 @@ Status | Requirement | Comment
 
 ## Known Issues
 
-* Overall
-    * When creating a user password isn't encrypted at client side, only backend encrypts before storing.
-    * secrets.json and config.json with env style setup.
-    * Some errors aren't nicely handled and we throw some ugly query errors sometimes.
-    * Project file-structure could give issues with imports
+#### Overall
+- When creating a user password isn't encrypted at client side, only backend encrypts before storing.
+- secrets.json and config.json with env style setup.
+- Some errors aren't nicely handled and we throw some ugly query errors sometimes.
+- Project file-structure could give issues with imports
 
-* Database
-    * Limited database unittests
-    * Update function isn't tests, issues with updating with null parameters
-    * Setup requires a MySQL database to be setup before hand
+#### Database
+- Limited database unittests
+- Update function isn't tests, issues with updating with null parameters
+- Setup requires a MySQL database to be setup before hand
 
-* API
-    * No API tests
-    * API calls aren't token protected. (API is useable without login, only frontend does "IsAdmin" and "IsLoggedIn" checks)
-    * Sometimes the Get functions calls twice
+#### API
+- No API tests
+- API calls aren't token protected. (API is useable without login, only frontend does "IsAdmin" and "IsLoggedIn" checks)
+- Sometimes the Get functions calls twice
 
-* Front-end
-    * No front-end react tests
-    * A non admin user can get everyones transactions with search
-    * Admin can delete itself
-    * Delete and Update doesn't update table. We have to refresh first to see result.
+#### Front-end
+- No front-end react tests
+- A non admin user can get everyones transactions with search
+- Admin can delete itself
+- Delete and Update doesn't update table. We have to refresh first to see result.
 
 ## Diagrams
 
