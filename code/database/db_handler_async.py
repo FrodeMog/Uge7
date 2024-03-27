@@ -193,12 +193,15 @@ class Service:
     @log_to_db
     async def delete_by_id_product(self, product):
         # Get the "deleted product" reference
-        deleted_product = await self.db_handler.get_by(Product, name='deleted_product')
+        stmt = select(Product).where(Product.name == 'deleted_product')
+        result = await self.db_handler.session.execute(stmt)
+        deleted_product = result.scalars().first()
 
         if not deleted_product:
             # If the "deleted product" doesn't exist, create it
             deleted_product = Product(name='deleted_product', description='This is a placeholder for a deleted product', currency='USD')
             await self.db_handler.add(deleted_product)
+            await self.db_handler.commit()  # Commit the transaction to save the new product
 
         # Update transactions that reference the product to reference the "deleted product" instead
         transactions = await self.db_handler.get_all_by(Transaction, product_id=product.id)
@@ -211,12 +214,15 @@ class Service:
     @log_to_db
     async def delete_by_id_category(self, category):
         # Get the "deleted category" reference
-        deleted_category = await self.db_handler.get_by(Category, name='deleted_category')
+        stmt = select(Category).where(Category.name == 'deleted_category')
+        result = await self.db_handler.session.execute(stmt)
+        deleted_category = result.scalars().first()
 
         if not deleted_category:
             # If the "deleted category" doesn't exist, create it
             deleted_category = Category(name='deleted_category', description='This is a placeholder for a deleted category')
             await self.db_handler.add(deleted_category)
+            await self.db_handler.commit()  # Commit the transaction to save the new category
 
         # Update products that reference the category to reference the "deleted category" instead
         products = await self.db_handler.get_all_by(Product, category_id=category.id)
@@ -229,12 +235,16 @@ class Service:
     @log_to_db
     async def delete_by_id_user(self, user):
         # Get the "deleted user" reference
-        deleted_user = await self.db_handler.get_by(User, username='deleted_user')
+        stmt = select(User).where(User.username == 'deleted_user')
+        result = await self.db_handler.session.execute(stmt)
+        deleted_user = result.scalars().first()
 
         if not deleted_user:
             # If the "deleted user" doesn't exist, create it
             deleted_user = User(username='deleted_user', email="a@a.com", password="deleted_user")
-        
+            await self.db_handler.add(deleted_user)
+            await self.db_handler.commit()  # Commit the transaction to save the new user
+
         # Update transactions that reference the user to reference the "deleted user" instead
         transactions = await self.db_handler.get_all_by(Transaction, user_id=user.id)
         for transaction in transactions:
