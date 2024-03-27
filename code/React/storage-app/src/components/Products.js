@@ -3,6 +3,7 @@ import api from '../api/api.js';
 import { AuthContext } from '../contexts/auth.js';
 import CategorySidebar from './Category_sidebar.js';
 import PurchaseModal from './Purchase.js';
+import RestockModal from './Restock.js';
 
 const Products = () => {
     const { loggedInUser, isAdmin } = useContext(AuthContext);
@@ -33,9 +34,15 @@ const Products = () => {
         ? products.filter(product => product.category_id === selectedCategory)
         : products;
 
-    const handleQuantityChange = (productId, quantity) => {
+    const handlePurchaseQuantityChange = (productId, quantity) => {
         setProducts(prevProducts => prevProducts.map(product =>
             product.id === productId ? { ...product, quantity: product.quantity - quantity } : product
+        ));
+    };
+
+    const handleRestockQuantityChange = (productId, quantity) => {
+        setProducts(prevProducts => prevProducts.map(product =>
+            product.id === productId ? { ...product, quantity: product.quantity + quantity } : product
         ));
     };
 
@@ -101,6 +108,9 @@ const Products = () => {
                                     </button>
                                 </th>
                                 <th>Purchase</th>
+                                {isAdmin && (
+                                    <th>Restock</th>
+                                )}
                             </tr>
                         </thead>
                         <tbody>
@@ -113,8 +123,13 @@ const Products = () => {
                                     <td>{product.currency}</td>
                                     <td>{product.quantity}</td>
                                     <td>
-                                        <PurchaseModal product={product} onQuantityChange={handleQuantityChange} />
+                                        <PurchaseModal product={product} onQuantityChange={handlePurchaseQuantityChange} />
                                     </td>
+                                    {isAdmin && (
+                                        <td>
+                                            <RestockModal product={product} onQuantityChange={handleRestockQuantityChange} />
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
