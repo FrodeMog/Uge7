@@ -20,7 +20,7 @@ function DeleteModal({ id, mode }) {
             if(isAdmin){
                 if(isAdmin){
                     if (mode === 'product') {
-                        //await api.delete(`/delete_product/${id}/`);
+                        await api.delete(`/delete_product/${id}/`);
                     } else if (mode === 'transaction') {
                         //await api.delete(`/delete_transaction/${id}/`);
                     } else if (mode === 'category') {
@@ -29,8 +29,8 @@ function DeleteModal({ id, mode }) {
                         //await api.delete(`/delete_user/${id}/`);
                     }
                 }
-                //setToastMessage(`${mode.charAt(0).toUpperCase() + mode.slice(1)} deleted successfully`);
-                setToastMessage(`Not implemented yet`);
+                setToastMessage(`${mode.charAt(0).toUpperCase() + mode.slice(1)} deleted successfully`);
+                //setToastMessage(`Not implemented yet`);
             } else {
                 setToastMessage('You are not authorized to delete');
             }

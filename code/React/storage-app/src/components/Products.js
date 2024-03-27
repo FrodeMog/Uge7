@@ -99,6 +99,13 @@ const Products = () => {
                                         Price {sortColumn === 'purchase_price' && (sortDirection ? '↓' : '↑')}
                                     </button>
                                 </th>
+                                {isAdmin && (
+                                <th>
+                                    <button className="btn btn-outline-primary text-left text-nowrap" onClick={() => handleSort('restock_price')}>
+                                        Restock Price {sortColumn === 'restock_price' && (sortDirection ? '↓' : '↑')}
+                                    </button>
+                                </th>
+                                )}
                                 <th>
                                     <button className="btn btn-outline-primary text-left text-nowrap" onClick={() => handleSort('currency')}>
                                         Currency {sortColumn === 'currency' && (sortDirection ? '↓' : '↑')}
@@ -126,6 +133,9 @@ const Products = () => {
                                     <td>{product.name}</td>
                                     <td>{categories.find(cat => cat.id === product.category_id)?.name}</td>
                                     <td>{product.purchase_price}</td>
+                                    {isAdmin && (
+                                    <td>{product.restock_price}</td>
+                                    )}
                                     <td>{product.currency}</td>
                                     <td>{product.quantity}</td>
                                     <td>

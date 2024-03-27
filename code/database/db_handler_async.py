@@ -169,6 +169,24 @@ class Service:
         return product
     
     @log_to_db
+    async def delete_by_id_product(self, product):
+        # Get the "deleted product" reference
+        deleted_product = await self.db_handler.get_by(Product, name='deleted_product')
+
+        if not deleted_product:
+            # If the "deleted product" doesn't exist, create it
+            deleted_product = Product(name='deleted_product', description='This is a placeholder for a deleted product', currency='USD')
+            await self.db_handler.add(deleted_product)
+
+        # Update transactions that reference the product to reference the "deleted product" instead
+        transactions = await self.db_handler.get_all_by(Transaction, product_id=product.id)
+        for transaction in transactions:
+            await self.db_handler.update(transaction, product_id=deleted_product.id)
+
+        # Now delete the product
+        await self.db_handler.delete(product)
+    
+    @log_to_db
     async def create_transaction(self, product_id, user_id, quantity, transaction_type, currency):
         currency = currency.lower()
         data_dict = {
@@ -235,7 +253,7 @@ class AsyncDatabaseHandler():
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        print(f"exc_type: {exc_type}, exc_val: {exc_val}, exc_tb: {exc_tb}")
+        #print(f"exc_type: {exc_type}, exc_val: {exc_val}, exc_tb: {exc_tb}")
         if self.transaction is not None and self.transaction.is_active:
             if exc_type is not None:
                 await self.transaction.rollback()
