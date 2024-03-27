@@ -60,3 +60,16 @@ class TransactionBase(BaseModel):
     currency: str
     quantity: int
     transaction_type: str
+
+class TransactionResponse(BaseModel):
+    id: int
+    product_id: int
+    product_name: str
+    product_category: str
+    user_id: int
+    user_name: str
+    date: str
+    price: float
+    currency: str
+    quantity: int
+    transaction_type: str
