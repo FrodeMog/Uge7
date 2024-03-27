@@ -22,6 +22,7 @@ const NavBar = () => {
             Storage App
           </a>
               {loggedInUser && <button className="btn btn-primary" onClick={() => navigate('/products')}>Products</button>}
+              {loggedInUser && <button className="btn btn-primary" onClick={() => navigate('/transactions')}>Transactions</button>}
               {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/users')}>Users</button>}
               {isAdmin && <button className="btn btn-primary" onClick={() => navigate('/create')}>Create</button>}
               {loggedInUser ? (

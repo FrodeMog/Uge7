@@ -9,6 +9,7 @@ import Create from './components/Create.js';
 import NavBar from './components/NavBar.js';
 import Home from './components/Home.js';
 import Users from './components/Users.js';
+import Transactions from './components/Transactions.js';
 // router
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
@@ -26,6 +27,11 @@ const App = () => {
       <NavBar />
         <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/transactions" element={
+            <UserProtectedRoute>
+              <Transactions />
+            </UserProtectedRoute>
+          } />
           <Route path="/products" element={
             <UserProtectedRoute>
               <Products />
