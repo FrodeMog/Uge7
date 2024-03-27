@@ -67,7 +67,6 @@ const Users = () => {
                         {isAdmin && (
                             <>
                                 <th>Delete</th>
-                                <th>Update</th>
                             </>
                         )}
                     </tr>
@@ -83,9 +82,6 @@ const Users = () => {
                                 <>
                                     <td>
                                         <DeleteModal mode="user" id={user.id} />
-                                    </td>
-                                    <td>
-                                        <UpdateModal mode="user" id={user.id} />
                                     </td>
                                 </>
                             )}
