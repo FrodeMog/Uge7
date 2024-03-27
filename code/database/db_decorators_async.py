@@ -6,6 +6,7 @@ import json
 def log_to_db(func):
     @wraps(func)
     async def wrapper(self, *args, **kwargs):
+        message = kwargs.pop('log_message', None)  # Get the log message if it exists
         kwargs_copy = kwargs.copy()
         if 'password' in kwargs_copy:
             kwargs_copy['password'] = "REMOVED_BY_LOGGER"
@@ -13,7 +14,7 @@ def log_to_db(func):
         
         try:
             result = await func(self, *args, **kwargs)
-            self.session.add(Log(func=func.__name__, kwargs=kwargs_str, status=f"OK"))
+            self.session.add(Log(func=func.__name__, kwargs=kwargs_str, status=f"OK", message=message))
             await self.session.commit()
             return result
         except Exception as e:
