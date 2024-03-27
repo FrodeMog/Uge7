@@ -5,7 +5,7 @@ import { AuthContext } from '../contexts/auth.js';
 const Logs = () => {
     const { loggedInUser, isAdmin } = useContext(AuthContext);
     const [logs, setLogs] = useState([]);
-    const [sortColumn, setSortColumn] = useState('date'); // start sorted by date
+    const [sortColumn, setSortColumn] = useState('id'); // start sorted by id
     const [sortDirection, setSortDirection] = useState(false); // false for descending order
 
     useEffect(() => {

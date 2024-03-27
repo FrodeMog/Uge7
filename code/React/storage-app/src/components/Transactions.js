@@ -13,8 +13,8 @@ const Transactions = () => {
     const { loggedInUser, handleContextLogin, isAdmin, setLoggedInUser } = useContext(AuthContext);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
-    const [sortColumn, setSortColumn] = useState(null);
-    const [sortDirection, setSortDirection] = useState(true);   
+    const [sortColumn, setSortColumn] = useState('id'); // start sorted by id
+    const [sortDirection, setSortDirection] = useState(false); // false for descending order
     
 
 
