@@ -34,10 +34,15 @@ class GenerateFakeData():
         await self.generate_references()
         await self.generate_base_users()
 
+        print("Generating users...")
         await self.generate_user(100)
+        print("Generating categories...")
         await self.generate_categories(10)
+        print("Generating subcategories...")
         await self.generate_subcategories(100)
+        print("Generating products...")
         await self.generate_products(100)
+        print("Generating transactions...")
         await self.generate_transactions(1000)
 
     async def generate_references(self):
