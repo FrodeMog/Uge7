@@ -178,7 +178,7 @@ Status | Requirement | Comment
 
 ### Overall Full-stack flow
 Full stack diagram from SQLAlchemy ORMS -> Connect -> Database Handler -> FastAPI -> React Frontend
-![Diagram](diagrams/project_diagram.svg)
+![Diagram](diagrams/Project_diagram.png)
 
 ### Database Diagram
 Database diagram with relationships. Categories referes to itself because of a tree-like parent.id structure to make sub_categories
