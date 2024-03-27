@@ -222,6 +222,38 @@ class Service:
         await self.db_handler.delete(user)
     
     @log_to_db
+    async def update_by_id_product(self, product, **kwargs):
+        # Separate category_name from the other fields
+        category_name = kwargs.pop('category_name', None)
+
+        # Validate and update the product
+        await Validator.validate_product(kwargs, self.db_handler)
+        await self.db_handler.update(product, **kwargs)
+
+        # If category_name was provided, update the product's category
+        if category_name is not None:
+            # Fetch the product's category and update its name
+            category = await self.db_handler.get_by_id(Category, product.category_id)
+            category.name = category_name
+            await self.db_handler.commit()
+    
+    @log_to_db
+    async def update_by_id_category(self, category, **kwargs):
+        # Separate parent_name from the other fields
+        parent_name = kwargs.pop('parent_name', None)
+
+        # Validate and update the category
+        await Validator.validate_category(kwargs, self.db_handler)
+        await self.db_handler.update(category, **kwargs)
+
+        # If parent_name was provided, update the category's parent
+        if parent_name is not None:
+            # Fetch the category's parent and update its name
+            parent = await self.db_handler.get_by(Category, id=category.parent_id)
+            parent.name = parent_name
+            await self.db_handler.commit()
+    
+    @log_to_db
     async def create_transaction(self, product_id, user_id, quantity, transaction_type, currency):
         currency = currency.lower()
         data_dict = {
@@ -365,6 +397,18 @@ class AsyncDatabaseHandler():
         else:
             stmt = update(instance.__class__).where(instance.__class__.id == instance.id).values(**kwargs)
             await self.session.execute(stmt)
+        
+    async def update_by_id(self, model, id, **kwargs):
+        instance = await self.get_by_id(model, id)
+        if instance is not None:
+            item_type_lower = type(instance).__name__.lower()
+            if hasattr(self.service, f"update_by_id_{item_type_lower}"):
+                update_method = getattr(self.service, f"update_by_id_{item_type_lower}")
+                return await update_method(instance, **kwargs)
+            else:
+                stmt = update(model).where(model.id == id).values(**kwargs)
+                await self.session.execute(stmt)
+                await self.session.commit()
 
     async def get_by_contains(self, model, **filters):
         stmt = select(model).where(and_(*[getattr(model, k).contains(v) for k, v in filters.items()], filter_deleted_references(model)))

@@ -121,7 +121,7 @@ async def delete_admin_user(user_id: int):
 async def update_user(user_id: int, user: UserBase):
     async with AsyncDatabaseHandler("User") as db_h:
         try:
-            await db_h.update(User, id=user_id, **user.dict())
+            await db_h.update_by_id(User, id=user_id, **user.dict())
         except HTTPException:
             raise
         except Exception as e:
@@ -227,7 +227,7 @@ async def delete_category(category_id: int):
 async def update_category(category_id: int, category: CategoryBase):
     async with AsyncDatabaseHandler("Category") as db_h:
         try:
-            await db_h.update(Category, id=category_id, **category.dict())
+            await db_h.update_by_id(Category, id=category_id, **category.dict())
         except HTTPException:
             raise
         except Exception as e:
@@ -335,7 +335,7 @@ async def delete_product(product_id: int):
 async def update_product(product_id: int, product: ProductBase):
     async with AsyncDatabaseHandler("Product") as db_h:
         try:
-            await db_h.update(Product, id=product_id, **product.dict())
+            await db_h.update_by_id(Product, id=product_id, **product.dict())
         except HTTPException:
             raise
         except Exception as e:
@@ -481,7 +481,7 @@ async def delete_transaction(transaction_id: int):
 async def update_transaction(transaction_id: int, transaction: TransactionBase):
     async with AsyncDatabaseHandler("Transaction") as db_h:
         try:
-            await db_h.update(Transaction, id=transaction_id, **transaction.dict())
+            await db_h.update_by_id(Transaction, id=transaction_id, **transaction.dict())
         except HTTPException:
             raise
         except Exception as e:
