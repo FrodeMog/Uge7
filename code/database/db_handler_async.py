@@ -185,6 +185,41 @@ class Service:
 
         # Now delete the product
         await self.db_handler.delete(product)
+
+    @log_to_db
+    async def delete_by_id_category(self, category):
+        # Get the "deleted category" reference
+        deleted_category = await self.db_handler.get_by(Category, name='deleted_category')
+
+        if not deleted_category:
+            # If the "deleted category" doesn't exist, create it
+            deleted_category = Category(name='deleted_category', description='This is a placeholder for a deleted category')
+            await self.db_handler.add(deleted_category)
+
+        # Update products that reference the category to reference the "deleted category" instead
+        products = await self.db_handler.get_all_by(Product, category_id=category.id)
+        for product in products:
+            await self.db_handler.update(product, category_id=deleted_category.id)
+
+        # Now delete the category
+        await self.db_handler.delete(category)
+    
+    @log_to_db
+    async def delete_by_id_user(self, user):
+        # Get the "deleted user" reference
+        deleted_user = await self.db_handler.get_by(User, username='deleted_user')
+
+        if not deleted_user:
+            # If the "deleted user" doesn't exist, create it
+            deleted_user = User(username='deleted_user', email="a@a.com", password="deleted_user")
+        
+        # Update transactions that reference the user to reference the "deleted user" instead
+        transactions = await self.db_handler.get_all_by(Transaction, user_id=user.id)
+        for transaction in transactions:
+            await self.db_handler.update(transaction, user_id=deleted_user.id)
+
+        # Now delete the user
+        await self.db_handler.delete(user)
     
     @log_to_db
     async def create_transaction(self, product_id, user_id, quantity, transaction_type, currency):
@@ -253,7 +288,7 @@ class AsyncDatabaseHandler():
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        #print(f"exc_type: {exc_type}, exc_val: {exc_val}, exc_tb: {exc_tb}")
+        print(f"exc_type: {exc_type}, exc_val: {exc_val}, exc_tb: {exc_tb}")
         if self.transaction is not None and self.transaction.is_active:
             if exc_type is not None:
                 await self.transaction.rollback()

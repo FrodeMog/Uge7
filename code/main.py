@@ -97,7 +97,7 @@ async def create_admin_user(admin_user: AdminUserBase):
 async def delete_user(user_id: int):
     async with AsyncDatabaseHandler("User") as db_h:
         try:
-            await db_h.delete(User, id=user_id)
+            await db_h.delete_by_id(User, id=user_id)
         except HTTPException:
             raise
         except Exception as e:
@@ -109,7 +109,7 @@ async def delete_user(user_id: int):
 async def delete_admin_user(user_id: int):
     async with AsyncDatabaseHandler("AdminUser") as db_h:
         try:
-            await db_h.delete(AdminUser, id=user_id)
+            await db_h.delete_by_id(AdminUser, id=user_id)
         except HTTPException:
             raise
         except Exception as e:
@@ -215,7 +215,7 @@ async def create_category(category: CategoryBase):
 async def delete_category(category_id: int):
     async with AsyncDatabaseHandler("Category") as db_h:
         try:
-            await db_h.delete(Category, id=category_id)
+            await db_h.delete_by_id(Category, id=category_id)
         except HTTPException:
             raise
         except Exception as e:
@@ -469,7 +469,7 @@ async def create_transaction(transaction: TransactionBase):
 async def delete_transaction(transaction_id: int):
     async with AsyncDatabaseHandler("Transaction") as db_h:
         try:
-            await db_h.delete(Transaction, id=transaction_id)
+            await db_h.delete_by_id(Transaction, id=transaction_id)
         except HTTPException:
             raise
         except Exception as e:

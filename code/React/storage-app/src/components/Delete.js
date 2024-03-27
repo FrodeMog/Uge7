@@ -24,9 +24,9 @@ function DeleteModal({ id, mode }) {
                     } else if (mode === 'transaction') {
                         //await api.delete(`/delete_transaction/${id}/`);
                     } else if (mode === 'category') {
-                        //await api.delete(`/delete_category/${id}/`);
+                        await api.delete(`/delete_category/${id}/`);
                     } else if (mode === 'user') {
-                        //await api.delete(`/delete_user/${id}/`);
+                        await api.delete(`/delete_user/${id}/`);
                     }
                 }
                 setToastMessage(`${mode.charAt(0).toUpperCase() + mode.slice(1)} deleted successfully`);
