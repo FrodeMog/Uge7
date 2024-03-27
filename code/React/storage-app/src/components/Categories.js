@@ -60,7 +60,7 @@ const Categories = () => {
                         </th>
                         <th>
                             <button className="btn btn-outline-primary text-left text-nowrap" onClick={() => handleSort('parent_id')}>
-                                Parent ID {sortColumn === 'parent_name' && (sortDirection ? '↓' : '↑')}
+                                Parent Name {sortColumn === 'parent_name' && (sortDirection ? '↓' : '↑')}
                             </button>
                         </th>
                         <th>
