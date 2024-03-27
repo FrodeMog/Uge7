@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import sys
 sys.path.append("database")
 from database.db_handler_async import AsyncDatabaseHandler
@@ -26,11 +27,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
+
 @app.post("/login_user/", response_model=LoginResponse)
 async def login_user(user: LoginBase):
     async with AsyncDatabaseHandler() as db_h:
         try:
             user_db = await db_h.get_by(User, username=user.username)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to login user: {e}")
         
@@ -57,6 +67,8 @@ async def create_user(user: UserBase):
                 password=user.password,
                 email=user.email
             )
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create user: {e}")
     user_response = UserResponse(**user.__dict__)
@@ -73,6 +85,8 @@ async def create_admin_user(admin_user: AdminUserBase):
                 email=admin_user.email,
                 admin_status=admin_user.admin_status
             )
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create admin user: {e}")
     admin_user_response = AdminUserResponse(**admin_user.__dict__)
@@ -84,6 +98,8 @@ async def get_user(user_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
             user = await db_h.get_by(User, id=user_id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get user: {e}")
         
@@ -98,6 +114,8 @@ async def get_user_by_username(username: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             user = await db_h.get_by(User, username=username)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get user: {e}")
         
@@ -112,6 +130,8 @@ async def get_users():
     async with AsyncDatabaseHandler() as db_h:
         try:
             users = await db_h.get_all(User)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get users: {e}")
     
@@ -126,6 +146,8 @@ async def get_admin_users():
     async with AsyncDatabaseHandler() as db_h:
         try:
             admin_users = await db_h.get_all(AdminUser)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get admin users: {e}")
         
@@ -146,6 +168,8 @@ async def create_category(category: CategoryBase):
                 parent_id=category.parent_id,
                 parent_name=category.parent_name
             )
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create category: {e}")
     return category
@@ -156,6 +180,8 @@ async def get_category(category_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
             category = await db_h.get_by(Category, id=category_id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get category: {e}")
         
@@ -169,6 +195,8 @@ async def get_category_by_name(category_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             category = await db_h.get_by(Category, name=category_name)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get category: {e}")
         
@@ -182,7 +210,11 @@ async def get_subcategories(category_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             category = await db_h.get_by(Category, name=category_name)
+            if category is None:
+                raise HTTPException(status_code=404, detail="Category not found")
             subcategories = await db_h.get_all_by(Category, parent_id=category.id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get subcategories: {e}")
         
@@ -196,6 +228,8 @@ async def get_categories():
     async with AsyncDatabaseHandler() as db_h:
         try:
             categories = await db_h.get_all(Category)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get categories: {e}")
         
@@ -218,6 +252,8 @@ async def create_product(product: ProductBase):
                 currency=product.currency,
                 quantity=product.quantity
             )
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create product: {e}")
     return product
@@ -228,6 +264,8 @@ async def get_product(product_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
             product = await db_h.get_by(Product, id=product_id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get product: {e}")
         
@@ -241,6 +279,8 @@ async def get_product_by_name(product_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             product = await db_h.get_by(Product, name=product_name)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get product: {e}")
         
@@ -254,7 +294,11 @@ async def get_products_by_category(category_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             category = await db_h.get_by(Category, name=category_name)
+            if category is None:
+                raise HTTPException(status_code=404, detail="Category not found")
             products = await db_h.get_all_by(Product, category_id=category.id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get products: {e}")
         
@@ -275,7 +319,11 @@ async def get_products_by_category_with_subcategories(category_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             category = await db_h.get_by(Category, name=category_name)
+            if category is None:
+                raise HTTPException(status_code=404, detail="Category not found")
             products = await get_products_in_category_and_subcategories(db_h, category.id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get products: {e}")
         
@@ -289,6 +337,8 @@ async def get_products_with_quantity_less_than(quantity: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
             products = await db_h.get_all_with_condition(Product, Product.quantity < quantity)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get products: {e}")
         
@@ -302,6 +352,8 @@ async def get_products():
     async with AsyncDatabaseHandler() as db_h:
         try:
             products = await db_h.get_all(Product)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get products: {e}")
         
@@ -322,6 +374,8 @@ async def create_transaction(transaction: TransactionBase):
                 quantity=transaction.quantity,
                 transaction_type=transaction.transaction_type
             )
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to create transaction: {e}")
     return transaction
@@ -332,6 +386,8 @@ async def get_transaction(transaction_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
             transaction = await db_h.get_by(Transaction, id=transaction_id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transaction: {e}")
         
@@ -345,6 +401,8 @@ async def get_transactions_by_user(user_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
             transactions = await db_h.get_all_by(Transaction, user_id=user_id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
         
@@ -358,7 +416,11 @@ async def get_transactions_by_user(user_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             user = await db_h.get_by(User, username=user_name)
+            if user is None:
+                raise HTTPException(status_code=404, detail="User not found")
             transactions = await db_h.get_all_by(Transaction, user_id=user.id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
         
@@ -372,6 +434,8 @@ async def get_transactions_by_product(product_id: int):
     async with AsyncDatabaseHandler() as db_h:
         try:
             transactions = await db_h.get_all_by(Transaction, product_id=product_id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
         
@@ -385,7 +449,11 @@ async def get_transactions_by_product(product_name: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             product = await db_h.get_by(Product, name=product_name)
+            if product is None:
+                raise HTTPException(status_code=404, detail="Product not found")
             transactions = await db_h.get_all_by(Transaction, product_id=product.id)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
         
@@ -393,12 +461,13 @@ async def get_transactions_by_product(product_name: str):
         raise HTTPException(status_code=404, detail="No transactions found")
 
     return transactions
-
 @app.get("/get_transactions_by_transaction_type/{transaction_type}/")
 async def get_transactions_by_transaction_type(transaction_type: str):
     async with AsyncDatabaseHandler() as db_h:
         try:
             transactions = await db_h.get_all_by(Transaction, transaction_type=transaction_type)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
         
@@ -412,6 +481,8 @@ async def get_transactions():
     async with AsyncDatabaseHandler() as db_h:
         try:
             transactions = await db_h.get_all(Transaction)
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to get transactions: {e}")
         
