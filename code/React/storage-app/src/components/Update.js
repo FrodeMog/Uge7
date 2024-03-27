@@ -111,7 +111,7 @@ function UpdateModal({ id, mode }) {
                                     Cancel
                                 </Button>
                                 <Button variant="warning" type="submit">
-                                    Delete
+                                    Update
                                 </Button>
                             </Modal.Footer>
                     </form>
@@ -135,7 +135,7 @@ function UpdateModal({ id, mode }) {
                                     Cancel
                                 </Button>
                                 <Button variant="warning" type="submit">
-                                    Delete
+                                    Update
                                 </Button>
                             </Modal.Footer>
                         </form>

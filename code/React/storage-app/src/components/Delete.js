@@ -59,11 +59,11 @@ function DeleteModal({ id, mode }) {
                     </Button>
                 </Modal.Footer>
             </Modal>
-            <div className="d-flex justify-content-center align-items-center mb-4">
-                    <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide>
-                        <Toast.Body className="text-center">{toastMessage}</Toast.Body>
-                    </Toast>
-                </div>
+            <div className="d-flex justify-content-center align-items-center mb-4" >
+                <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide>
+                    <Toast.Body className="text-center">{toastMessage}</Toast.Body>
+                </Toast>
+            </div>
         </>
     );
 }
