@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import api from '../api/api.js';
 import { AuthContext } from '../contexts/auth.js';
+import DeleteModal from './Delete.js';
+import UpdateModal from './Update.js';
+
 
 const Users = () => {
-    const { loggedInUser } = useContext(AuthContext);
+    const { loggedInUser, isAdmin } = useContext(AuthContext);
     const [users, setUsers] = useState([]);
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState(true); // true for ascending, false for descending
@@ -61,6 +64,12 @@ const Users = () => {
                                 Type {sortColumn === 'type' && (sortDirection ? '↓' : '↑')}
                             </button>
                         </th>
+                        {isAdmin && (
+                            <>
+                                <th>Delete</th>
+                                <th>Update</th>
+                            </>
+                        )}
                     </tr>
                 </thead>
                 <tbody>
@@ -70,6 +79,16 @@ const Users = () => {
                             <td>{user.username}</td>
                             <td>{user.email}</td>
                             <td>{user.type}</td>
+                            {isAdmin && (
+                                <>
+                                    <td>
+                                        <DeleteModal mode="user" id={user.id} />
+                                    </td>
+                                    <td>
+                                        <UpdateModal mode="user" id={user.id} />
+                                    </td>
+                                </>
+                            )}
                         </tr>
                     ))}
                 </tbody>
